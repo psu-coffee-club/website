@@ -1,6 +1,6 @@
 # Penn State Coffee Club
 
-A single-page site built around opening a coffee bag and discovering a club evening inside it. A Three.js model gives the bag connected front, back, side, and mouth surfaces. Its top panels separate as the visitor scrolls, revealing a photographic coffee bean texture inside. Editorial typography uses Newsreader throughout. The page is still a static Vercel site.
+A single-page site built around opening a coffee bag and discovering a club evening inside it. A Three.js model gives the bag connected front, back, side, and mouth surfaces. The seal, shoulders, and side gussets deform together as the visitor scrolls. A separate lining descends into a hollow, shadowed interior, with no coffee texture across the opening. Scroll motion is damped and reversible; reduced-motion preferences show the open pose without animation. Editorial typography uses Newsreader throughout. The page is still a static Vercel site.
 
 ## Local preview
 

@@ -671,7 +671,7 @@ body { font-size: 17px; }
 .bag-3d-shell.is-unavailable::before { position: absolute; top: 26%; left: 50%; width: 20%; aspect-ratio: 1; border-radius: 50%; background: url('/images/psucoffee-logo.jpg') center / cover; content: ''; transform: translateX(-50%); }
 .bag-3d-shell.is-unavailable::after { position: absolute; top: 39%; left: 0; width: 100%; color: #4c3528; content: 'PENN STATE\A COFFEE CLUB'; font-size: clamp(17px, 2vw, 27px); line-height: 1; text-align: center; white-space: pre; }
 .hero-bag { width: min(34vw, 470px, 48vh); }
-.story-bag { width: min(36vw, 440px, 45vh); min-width: 260px; }
+.story-bag { width: min(40vw, 480px, 52vh); min-width: 260px; }
 .stage-product { overflow: visible; }
 
 @media (max-width: 760px) {

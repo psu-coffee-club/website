@@ -34,10 +34,6 @@
   const cues = [...document.querySelectorAll("[data-cue]")];
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const clamp = (value) => Math.min(1, Math.max(0, value));
-  const ease = (value) => {
-    const t = clamp(value);
-    return t * t * (3 - 2 * t);
-  };
   const chapters = [
     {
       name: "Brew Team",
@@ -88,15 +84,18 @@
     const fullPageTravel = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
     const pageProgress = Math.min(1, Math.max(0, window.scrollY / fullPageTravel));
     if (pageProgressFill) pageProgressFill.style.transform = `scaleX(${pageProgress})`;
-    if (!story || !storyBag || reducedMotion.matches) return;
+    if (!story || !storyBag) return;
+    if (reducedMotion.matches) {
+      window.coffeeBag3D?.setProgress(1, true);
+      return;
+    }
     const bounds = story.getBoundingClientRect();
     const travel = Math.max(1, story.offsetHeight - window.innerHeight);
     const progress = clamp(-bounds.top / travel);
     const chapter = Math.min(chapters.length - 1, Math.floor(progress * chapters.length));
-    const opening = ease((progress - 0.08) / 0.75);
 
     updateChapter(chapter);
-    window.coffeeBag3D?.setProgress(opening);
+    window.coffeeBag3D?.setProgress(progress);
   };
 
   const requestStoryUpdate = () => {

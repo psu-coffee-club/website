@@ -1,29 +1,13 @@
 import * as THREE from "./vendor/three.module.js";
 
-const WIDTH = 2.52;
-const BOTTOM = -1.88;
-const HINGE = 1.42;
-const TOP = 1.88;
-const FRONT = 0.36;
-const BACK = -0.36;
-const PANEL_HEIGHT = TOP - BOTTOM;
 const FRONT_ART = "/images/bag-front-artwork.webp";
 const CLUB_SEAL = "/images/psucoffee-logo.jpg";
-const BEAN_ART = "/images/coffee-beans-interior.webp";
-
-const clamp = (value) => Math.min(1, Math.max(0, value));
-const widthScale = (y) => {
-  const t = clamp((y - BOTTOM) / PANEL_HEIGHT);
-  return 0.92 + 0.17 * Math.sin(t * Math.PI) - 0.11 * t;
-};
-const topHalfWidth = WIDTH / 2 * widthScale(TOP);
-
-function paperDepth(face, x, y) {
-  const edge = Math.abs(x) / (WIDTH / 2);
-  const bulge = 0.16 * Math.max(0, 1 - edge * edge) * Math.sin(clamp((y - BOTTOM) / PANEL_HEIGHT) * Math.PI);
-  const folds = (0.015 * Math.sin(y * 12.5 + x * 4.2) + 0.009 * Math.sin(y * 28 - x * 9)) * (0.55 + edge * 0.45);
-  return face === "front" ? FRONT + bulge + folds : BACK - bulge - folds;
-}
+const BOTTOM = -1.9;
+const HEIGHT = 3.8;
+const clamp = (n) => Math.max(0, Math.min(1, n));
+const mix = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, n) => { const t = clamp((n - a) / (b - a)); return t * t * (3 - 2 * t); };
+const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {
@@ -60,303 +44,317 @@ async function makeFrontTexture() {
   return texture;
 }
 
-function makePanel(start, end, face, material) {
-  const geometry = new THREE.PlaneGeometry(WIDTH, end - start, 32, 24);
-  const position = geometry.getAttribute("position");
-  const uv = geometry.getAttribute("uv");
-  const coordinates = [];
-  for (let index = 0; index < position.count; index += 1) {
-    const u = uv.getX(index);
-    const t = uv.getY(index);
-    const originalY = start + t * (end - start);
-    const x = (u - 0.5) * WIDTH * widthScale(originalY);
-    coordinates.push({ x, t, originalY });
-    uv.setY(index, (originalY - BOTTOM) / PANEL_HEIGHT);
-    position.setXYZ(index, x, originalY, paperDepth(face, x, originalY));
-  }
-  position.needsUpdate = true;
-  uv.needsUpdate = true;
-  geometry.computeVertexNormals();
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.castShadow = true;
-  return { mesh, geometry, coordinates };
+
+// All four walls share this coordinate system, including their exact seam positions.
+// Opening pressure travels down the pouch; the bottom gusset stays on the table.
+function facePoint(face, u, v, progress) {
+  const delay = 0.10 * (1 - u) / 2;
+  const open = smooth(0.12 + delay, 0.83 + delay, progress);
+  const settle = smooth(0.72, 1, progress);
+  const tension = Math.sin(Math.PI * smooth(0, 0.55, progress));
+  const shoulder = smooth(0.32, 1, v);
+  const neck = smooth(0.66, 1, v);
+  const halfWidth = 1.035 + 0.095 * Math.sin(Math.PI * v)
+    - 0.10 * open * shoulder + 0.016 * tension * shoulder;
+  const centre = Math.max(0, 1 - u * u);
+  const bodyDepth = 0.31 + 0.13 * Math.sin(Math.PI * v);
+  const closedDepth = mix(bodyDepth, 0.008, neck);
+  const openDepth = 0.34 + 0.25 * shoulder;
+  const depth = mix(closedDepth, openDepth, open * (0.16 + 0.84 * shoulder));
+  const cornerDepth = mix(0.79, 0.55, shoulder * open);
+  const crossSection = cornerDepth + (1 - cornerDepth) * Math.pow(centre, 0.72);
+  const front = face === 'front';
+  const sign = front ? 1 : -1;
+  // Broad diagonal paper folds, strongest near the corners, soften under tension.
+  const edgeWeight = Math.pow(Math.abs(u), 3);
+  const bottomFold = Math.exp(-Math.pow((v - 0.09 - 0.075 * Math.abs(u)) / 0.055, 2));
+  const shoulderFold = Math.exp(-Math.pow((v - 0.75 + 0.13 * Math.abs(u)) / 0.065, 2));
+  const fold = (0.068 * bottomFold - 0.045 * shoulderFold * (1 - 0.55 * open)) * edgeWeight;
+  const bow = 0.032 * Math.sin(2.5 * Math.PI * v + u * 1.4) * Math.sin(Math.PI * v) * edgeWeight;
+  const lipBend = smooth(0.86, 1, v) * open * centre;
+  const x = u * halfWidth + 0.025 * tension * Math.sin(Math.PI * v);
+  const y = BOTTOM + HEIGHT * v
+    - open * shoulder * (front ? 0.12 : 0.028) * centre
+    - (front ? 0.065 : -0.025) * lipBend
+    + 0.007 * Math.sin(5.5 * u + 1.2) * smooth(0.9, 1, v);
+  const z = sign * (depth * crossSection + fold + bow)
+    + sign * (front ? 0.045 : 0.025) * lipBend
+    - sign * 0.018 * settle * shoulder * centre;
+  return [x, y, z];
 }
 
-function topEdge(face, x, openness) {
-  const delay = 0.34 * (0.5 - x / WIDTH);
-  const reveal = clamp((openness - delay) / (1 - delay));
-  const mouthShape = Math.sqrt(Math.max(0, 1 - (x / topHalfWidth) ** 2));
-  const peel = reveal * mouthShape;
-  const paperCut = 0.016 * Math.sin(13 * x + 0.5) + 0.008 * Math.sin(29 * x);
-  if (face === "front") {
-    return {
-      y: TOP + paperCut - 0.31 * peel,
-      z: 0.015 + 0.82 * peel,
-    };
-  }
-  return {
-    y: TOP + paperCut + 0.035 * peel,
-    z: -0.015 - 0.66 * peel,
-  };
-}
-
-function moveFlap(panel, face, openness) {
-  const position = panel.geometry.getAttribute("position");
-  const front = face === "front";
-  for (let index = 0; index < position.count; index += 1) {
-    const { x, t } = panel.coordinates[index];
-    const edge = topEdge(face, x, openness);
-    const y = HINGE + (edge.y - HINGE) * t;
-    const hingeZ = paperDepth(face, x, HINGE);
-    const z = hingeZ + (edge.z - hingeZ) * t + Math.sin(t * Math.PI) * (front ? 0.035 : -0.035);
-    position.setXYZ(index, x, y, z);
-  }
-  position.needsUpdate = true;
-  panel.geometry.computeVertexNormals();
-}
-
-function quad(material) {
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(12), 3));
-  geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]), 2));
-  geometry.setIndex([0, 1, 2, 0, 2, 3]);
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.frustumCulled = false;
-  return { mesh, geometry };
-}
-
-function setQuad(surface, points) {
-  const position = surface.geometry.getAttribute("position");
-  points.forEach((point, index) => position.setXYZ(index, ...point));
-  position.needsUpdate = true;
-  surface.geometry.computeVertexNormals();
-}
-
-function makeStrip(material, columns = 20) {
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array((columns + 1) * 6), 3));
-  const uv = new Float32Array((columns + 1) * 4);
-  for (let column = 0; column <= columns; column += 1) {
-    uv[column * 4] = column / columns;
-    uv[column * 4 + 1] = 0;
-    uv[column * 4 + 2] = column / columns;
-    uv[column * 4 + 3] = 1;
-  }
-  geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
-  const indices = [];
-  for (let column = 0; column < columns; column += 1) {
-    const start = column * 2;
-    indices.push(start, start + 1, start + 3, start, start + 3, start + 2);
-  }
-  geometry.setIndex(indices);
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.frustumCulled = false;
-  return { mesh, geometry, columns };
-}
-
-function setStrip(surface, pointAt) {
-  const position = surface.geometry.getAttribute("position");
-  for (let column = 0; column <= surface.columns; column += 1) {
-    const x = topHalfWidth * (column / surface.columns * 2 - 1);
-    const [near, far] = pointAt(x);
-    position.setXYZ(column * 2, ...near);
-    position.setXYZ(column * 2 + 1, ...far);
-  }
-  position.needsUpdate = true;
-  surface.geometry.computeVertexNormals();
-}
-
-function makeSideBody(sign, material) {
-  const geometry = new THREE.BufferGeometry();
-  const vertices = [];
-  const colors = [];
-  const indices = [];
-  const rows = 32;
-  const profile = [
-    { z: FRONT, offset: 0, color: 0xb69977 },
-    { z: 0.2, offset: 0.09, color: 0x987555 },
-    { z: 0.025, offset: 0.02, color: 0x6e5039 },
-    { z: -0.2, offset: 0.09, color: 0x947250 },
-    { z: BACK, offset: 0, color: 0x75543b },
+function wallPoint(wall, u, v, progress) {
+  if (wall === 'front' || wall === 'back') return facePoint(wall, u, v, progress);
+  const sign = wall === 'right' ? 1 : -1;
+  const front = facePoint('front', sign, v, progress);
+  const back = facePoint('back', sign, v, progress);
+  const t = (u + 1) / 2;
+  const open = smooth(0.15, 0.9, progress);
+  const wave = Math.sin(Math.PI * t);
+  const gusset = (0.17 - 0.13 * open * smooth(0.2, 1, v)) * wave * wave;
+  return [
+    mix(front[0], back[0], t) - sign * gusset,
+    mix(front[1], back[1], t) - 0.025 * wave * smooth(0.7, 1, v) * open,
+    mix(front[2], back[2], t),
   ];
-  for (let row = 0; row <= rows; row += 1) {
-    const t = row / rows;
-    const y = BOTTOM + (HINGE - BOTTOM) * t;
-    const edge = WIDTH / 2 * widthScale(y);
-    for (const point of profile) {
-      const fold = point.offset + 0.025 * Math.sin(y * 8 + point.z * 9);
-      vertices.push(sign * (edge + fold), y, point.z);
-      const shade = new THREE.Color(point.color);
-      colors.push(shade.r, shade.g, shade.b);
-    }
-    if (row < rows) {
-      const base = row * profile.length;
-      for (let column = 0; column < profile.length - 1; column += 1) {
-        const a = base + column;
-        const b = base + column + 1;
-        const c = base + profile.length + column + 1;
-        const d = base + profile.length + column;
-        indices.push(a, b, c, a, c, d);
+}
+
+function paperGrain() {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 256;
+  const context = canvas.getContext('2d');
+  const data = context.createImageData(256, 256);
+  let seed = 71;
+  for (let i = 0; i < data.data.length; i += 4) {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    const value = 118 + (seed / 4294967296) * 26;
+    data.data[i] = data.data[i + 1] = data.data[i + 2] = value;
+    data.data[i + 3] = 255;
+  }
+  context.putImageData(data, 0, 0);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(4, 6);
+  return texture;
+}
+
+function makeWall(wall, material, inside = false) {
+  const cols = wall === 'front' || wall === 'back' ? 40 : 16;
+  const rows = 48;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array((cols + 1) * (rows + 1) * 3);
+  const uv = new Float32Array((cols + 1) * (rows + 1) * 2);
+  const colors = new Float32Array(positions.length);
+  const indices = [];
+  for (let row = 0; row <= rows; row++) {
+    for (let col = 0; col <= cols; col++) {
+      const index = row * (cols + 1) + col;
+      const v = row / rows;
+      uv[index * 2] = col / cols;
+      uv[index * 2 + 1] = v;
+      // The lining loses light progressively towards the bottom of the bag.
+      const light = inside ? 0.035 + 0.55 * Math.pow(v, 4) : 1;
+      colors[index * 3] = colors[index * 3 + 1] = colors[index * 3 + 2] = light;
+      if (row < rows && col < cols) {
+        const a = index, b = a + 1, c = a + cols + 1, d = c + 1;
+        const reverse = (wall === 'back' || wall === 'left') !== inside;
+        if (reverse) indices.push(a, c, b, b, c, d);
+        else indices.push(a, b, c, b, d, c);
       }
     }
   }
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   geometry.setIndex(indices);
-  geometry.computeVertexNormals();
-  return new THREE.Mesh(geometry, material);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = !inside;
+  mesh.receiveShadow = true;
+  mesh.frustumCulled = false;
+  return {
+    mesh,
+    update(progress) {
+      const attr = geometry.attributes.position;
+      for (let row = 0; row <= rows; row++) {
+        for (let col = 0; col <= cols; col++) {
+          const point = wallPoint(wall, col / cols * 2 - 1, row / rows, progress);
+          if (inside) {
+            // A separate inset lining, open at the top, with real depth behind the rim.
+            point[0] *= 0.996;
+            point[2] *= 0.985;
+            point[1] -= 0.004;
+          }
+          attr.setXYZ(row * (cols + 1) + col, ...point);
+        }
+      }
+      attr.needsUpdate = true;
+      geometry.computeVertexNormals();
+    },
+  };
 }
 
-function makeShadow() {
-  const canvas = document.createElement("canvas");
+function makeRim(wall, material, v = 1) {
+  const columns = wall === 'front' || wall === 'back' ? 64 : 24;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array((columns + 1) * 6);
+  const indices = [];
+  for (let col = 0; col < columns; col++) {
+    const a = col * 2;
+    indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+  }
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
+  geometry.setIndex(indices);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.frustumCulled = false;
+  return {
+    mesh,
+    update(progress) {
+      for (let col = 0; col <= columns; col++) {
+        const a = wallPoint(wall, col / columns * 2 - 1, v, progress);
+        const b = wallPoint(wall, col / columns * 2 - 1, v - 0.006, progress);
+        if (v < 1) { a[0] *= 0.992; a[2] *= 0.96; b[0] *= 0.992; b[2] *= 0.96; }
+        geometry.attributes.position.setXYZ(col * 2, ...a);
+        geometry.attributes.position.setXYZ(col * 2 + 1, ...b);
+      }
+      geometry.attributes.position.needsUpdate = true;
+      geometry.computeVertexNormals();
+    },
+  };
+}
+
+function makeFloor(material) {
+  const geometry = new THREE.PlaneGeometry(1.95, 0.44);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = BOTTOM + 0.01;
+  return mesh;
+}
+
+function makeContactShadow() {
+  const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 128;
-  const context = canvas.getContext("2d");
-  const gradient = context.createRadialGradient(64, 64, 8, 64, 64, 64);
-  gradient.addColorStop(0, "rgba(45, 27, 15, .32)");
-  gradient.addColorStop(1, "rgba(45, 27, 15, 0)");
+  const context = canvas.getContext('2d');
+  const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 62);
+  gradient.addColorStop(0, 'rgba(45,30,20,.30)');
+  gradient.addColorStop(0.6, 'rgba(45,30,20,.10)');
+  gradient.addColorStop(1, 'rgba(45,30,20,0)');
   context.fillStyle = gradient;
   context.fillRect(0, 0, 128, 128);
-  const shadow = new THREE.Mesh(
-    new THREE.PlaneGeometry(3.7, 2.2),
-    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthWrite: false })
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = BOTTOM - 0.055;
-  return shadow;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3.1, 1.7), new THREE.MeshBasicMaterial({
+    map: new THREE.CanvasTexture(canvas), transparent: true, depthWrite: false,
+  }));
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = BOTTOM - 0.025;
+  return mesh;
 }
 
-function mountBag(container, frontTexture, beanTexture, opening = 0) {
-  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
+function mountBag(container, frontTexture) {
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'default' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
   renderer.setClearColor(0x000000, 0);
-  renderer.domElement.setAttribute("aria-hidden", "true");
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.domElement.setAttribute('aria-hidden', 'true');
   container.append(renderer.domElement);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.OrthographicCamera(-2, 2, 2.6, -2.6, 0.1, 50);
-  camera.position.set(0, 2.05, 8.3);
+  const camera = new THREE.OrthographicCamera(-2, 2, 2.4, -2.4, 0.1, 30);
+  camera.position.set(0, 2.45, 8.5);
   camera.lookAt(0, 0, 0);
-  scene.add(new THREE.HemisphereLight(0xfff7e9, 0x6a4731, 2.05));
-  const key = new THREE.DirectionalLight(0xfff5e4, 2.25);
-  key.position.set(-3, 5, 6);
+  scene.add(new THREE.HemisphereLight(0xfff8ed, 0x7c6956, 1.55));
+  const key = new THREE.DirectionalLight(0xfff9f1, 2.8);
+  key.position.set(-3.5, 5.5, 5);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  Object.assign(key.shadow.camera, { left: -3, right: 3, top: 4, bottom: -3, near: 0.1, far: 20 });
+  key.shadow.bias = -0.0003;
+  key.shadow.normalBias = 0.015;
   scene.add(key);
-  const edgeLight = new THREE.DirectionalLight(0xe7c5a0, 1.15);
-  edgeLight.position.set(3, 2, -4);
-  scene.add(edgeLight);
+  const fill = new THREE.DirectionalLight(0xffecd2, 0.6);
+  fill.position.set(4, 1, 4);
+  scene.add(fill);
+  const edge = new THREE.DirectionalLight(0xffffff, 1.2);
+  edge.position.set(1, 3, -4);
+  scene.add(edge);
 
+  const grain = paperGrain();
+  const frontMaterial = new THREE.MeshStandardMaterial({ map: frontTexture, roughness: 0.88, bumpMap: grain, bumpScale: 0.012 });
+  const kraft = new THREE.MeshStandardMaterial({ color: 0xb79e7d, roughness: 0.94, bumpMap: grain, bumpScale: 0.018 });
+  const lining = new THREE.MeshStandardMaterial({ color: 0x776853, vertexColors: true, roughness: 0.64, metalness: 0.16 });
+  const lip = new THREE.MeshStandardMaterial({ color: 0xb9a78d, roughness: 0.66, side: THREE.DoubleSide });
+  const zipper = new THREE.MeshStandardMaterial({ color: 0x72624f, roughness: 0.7, side: THREE.DoubleSide });
   const bag = new THREE.Group();
   scene.add(bag);
-  scene.add(makeShadow());
-  const paper = new THREE.MeshStandardMaterial({ map: frontTexture, roughness: 0.93, side: THREE.DoubleSide });
-  const backPaper = new THREE.MeshStandardMaterial({ color: 0x644733, roughness: 0.96, side: THREE.DoubleSide });
-  const gussetPaper = new THREE.MeshStandardMaterial({ color: 0x9b7857, roughness: 0.94, side: THREE.DoubleSide });
-  const sidePaper = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.97, side: THREE.DoubleSide });
-  const innerBeans = new THREE.MeshStandardMaterial({ map: beanTexture, roughness: 0.7, side: THREE.DoubleSide });
-  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xc8bbaa, metalness: 0.24, roughness: 0.46, side: THREE.DoubleSide });
+  const deformers = [];
+  for (const wall of ['front', 'right', 'back', 'left']) {
+    deformers.push(makeWall(wall, wall === 'front' ? frontMaterial : kraft));
+    deformers.push(makeWall(wall, lining, true));
+    deformers.push(makeRim(wall, lip));
+    if (wall === 'front' || wall === 'back') deformers.push(makeRim(wall, zipper, 0.968));
+  }
+  bag.add(...deformers.map(part => part.mesh));
+  bag.add(makeFloor(new THREE.MeshBasicMaterial({ color: 0x17120e, side: THREE.DoubleSide })));
+  scene.add(makeContactShadow());
 
-  const frontBody = makePanel(BOTTOM, HINGE, "front", paper);
-  const frontFlap = makePanel(HINGE, TOP, "front", paper);
-  const backBody = makePanel(BOTTOM, HINGE, "back", backPaper);
-  const backFlap = makePanel(HINGE, TOP, "back", backPaper);
-  bag.add(backBody.mesh, backFlap.mesh, frontBody.mesh, frontFlap.mesh);
 
-  for (const sign of [-1, 1]) bag.add(makeSideBody(sign, sidePaper));
-  const upperSides = [quad(gussetPaper), quad(gussetPaper)];
-  bag.add(...upperSides.map((side) => side.mesh));
-  const mouth = makeStrip(innerBeans, 32);
-  bag.add(mouth.mesh);
-  const frontLip = makeStrip(rimMaterial);
-  const backLip = makeStrip(rimMaterial);
-  bag.add(frontLip.mesh, backLip.mesh);
-
-  let currentOpening = opening;
-  const render = () => renderer.render(scene, camera);
-  const setProgress = (value) => {
-    currentOpening = clamp(value);
-    moveFlap(frontFlap, "front", currentOpening);
-    moveFlap(backFlap, "back", currentOpening);
-    const half = topHalfWidth;
-    const frontTop = topEdge("front", half, currentOpening);
-    const backTop = topEdge("back", half, currentOpening);
-    setQuad(upperSides[0], [
-      [-WIDTH / 2 * widthScale(HINGE), HINGE, FRONT],
-      [-half, frontTop.y, frontTop.z],
-      [-half, backTop.y, backTop.z],
-      [-WIDTH / 2 * widthScale(HINGE), HINGE, BACK],
-    ]);
-    setQuad(upperSides[1], [
-      [WIDTH / 2 * widthScale(HINGE), HINGE, BACK],
-      [half, backTop.y, backTop.z],
-      [half, frontTop.y, frontTop.z],
-      [WIDTH / 2 * widthScale(HINGE), HINGE, FRONT],
-    ]);
-    setStrip(mouth, (x) => {
-      const front = topEdge("front", x, currentOpening);
-      const back = topEdge("back", x, currentOpening);
-      return [
-        [x, front.y - 0.045, front.z - 0.025],
-        [x, back.y - 0.045, back.z + 0.025],
-      ];
-    });
-    setStrip(frontLip, (x) => {
-      const edge = topEdge("front", x, currentOpening);
-      return [[x, edge.y + 0.008, edge.z + 0.006], [x, edge.y - 0.028, edge.z - 0.03]];
-    });
-    setStrip(backLip, (x) => {
-      const edge = topEdge("back", x, currentOpening);
-      return [[x, edge.y + 0.008, edge.z - 0.006], [x, edge.y - 0.028, edge.z + 0.03]];
-    });
-    mouth.mesh.visible = currentOpening > 0.015;
-    bag.rotation.y = -0.39 + currentOpening * 0.055;
-    bag.rotation.x = currentOpening * -0.025;
-    camera.position.y = 2.05 + 0.62 * currentOpening;
-    camera.lookAt(0, 0.08 * currentOpening, 0);
-    render();
+  let current = 0;
+  let target = 0;
+  let frame = 0;
+  let previousTime = 0;
+  const draw = (value) => {
+    deformers.forEach(part => part.update(value));
+    const turn = smooth(0, 0.75, value);
+    bag.rotation.y = mix(-0.33, -0.54, turn);
+    // Rotation reveals the unfolding side. The camera and grounded base remain stable.
+    renderer.render(scene, camera);
   };
-
+  const tick = (now) => {
+    frame = 0;
+    const dt = previousTime ? Math.min((now - previousTime) / 1000, 0.05) : 1 / 60;
+    previousTime = now;
+    current += (target - current) * (1 - Math.exp(-dt / 0.085));
+    if (Math.abs(target - current) < 0.00025) current = target;
+    draw(current);
+    if (current !== target && !document.hidden) frame = requestAnimationFrame(tick);
+    else previousTime = 0;
+  };
+  const setProgress = (value, immediate = false) => {
+    const next = clamp(value);
+    if (immediate || motionPreference.matches) {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      current = target = next;
+      draw(current);
+      return;
+    }
+    if (target === next) return;
+    target = next;
+    if (!frame && !document.hidden) frame = requestAnimationFrame(tick);
+  };
   const resize = () => {
     const width = Math.max(1, container.clientWidth);
     const height = Math.max(1, container.clientHeight);
     renderer.setSize(width, height, false);
-    const aspect = width / height;
-    const span = 4.7;
-    camera.left = -span * aspect / 2;
-    camera.right = span * aspect / 2;
+    const span = 4.65;
+    camera.left = -span * width / height / 2;
+    camera.right = span * width / height / 2;
     camera.top = span / 2;
     camera.bottom = -span / 2;
     camera.updateProjectionMatrix();
-    render();
+    draw(current);
   };
   const observer = new ResizeObserver(resize);
   observer.observe(container);
   resize();
-  setProgress(opening);
-  container.classList.add("is-rendered");
-  return { setProgress, resize, observer };
+  container.classList.add('is-rendered');
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && frame) { cancelAnimationFrame(frame); frame = 0; previousTime = 0; }
+    else if (!document.hidden && current !== target && !frame) frame = requestAnimationFrame(tick);
+  });
+  return { setProgress };
 }
 
 try {
-  const [frontTexture, beanImage] = await Promise.all([makeFrontTexture(), loadImage(BEAN_ART)]);
-  const beanTexture = new THREE.Texture(beanImage);
-  beanTexture.colorSpace = THREE.SRGBColorSpace;
-  beanTexture.anisotropy = 8;
-  beanTexture.needsUpdate = true;
-  const hero = document.querySelector('[data-bag-scene="hero"]');
-  const story = document.querySelector('[data-bag-scene="story"]');
-  if (hero) mountBag(hero, frontTexture, beanTexture, 0);
-  if (story) {
-    const model = mountBag(story, frontTexture, beanTexture, 0);
-    window.coffeeBag3D = model;
-    const track = document.querySelector(".unseal-track");
-    if (track) {
-      const travel = Math.max(1, track.offsetHeight - window.innerHeight);
-      const progress = clamp(-track.getBoundingClientRect().top / travel);
-      const t = clamp((progress - 0.08) / 0.75);
-      model.setProgress(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : t * t * (3 - 2 * t));
+  const frontTexture = await makeFrontTexture();
+  for (const container of document.querySelectorAll('[data-bag-scene]')) {
+    try {
+      const model = mountBag(container, frontTexture);
+      if (container.dataset.bagScene === 'story') {
+        window.coffeeBag3D = model;
+        const track = document.querySelector('.unseal-track');
+        const travel = Math.max(1, track.offsetHeight - window.innerHeight);
+        const progress = clamp(-track.getBoundingClientRect().top / travel);
+        model.setProgress(motionPreference.matches ? 1 : progress, true);
+      }
+    } catch (error) {
+      container.classList.add('is-unavailable');
+      console.error('Coffee bag scene could not load:', error);
     }
   }
 } catch (error) {
-  document.querySelectorAll('[data-bag-scene]').forEach((container) => container.classList.add('is-unavailable'));
-  console.error('Coffee bag 3D scene could not load:', error);
+  document.querySelectorAll('[data-bag-scene]').forEach(container => container.classList.add('is-unavailable'));
+  console.error('Coffee bag artwork could not load:', error);
 }
