@@ -659,17 +659,15 @@ body { font-size: 17px; }
 .footer-place, .back-top { font-size: 14px; letter-spacing: 0; }
 .label-line, .label-main, .label-note, .tiny-label, .cup-center, .table-stamp, .circle-note, .crawl-ticket, .map-coordinate, .route-label, .map-compass, .crawl-sticker, .map-doodle, .passport, .ig-tag { font-family: var(--sans); }
 
-/* The top is a set of hinged planes, all registered to one fixed bag image. */
-.stage-product { perspective: 950px; overflow: visible; }
-.story-bag { transform-style: preserve-3d; transform: rotateY(var(--bag-y, -7deg)) rotateX(var(--bag-x, 1deg)); }
-.story-bag .bag-sealed { z-index: 0; backface-visibility: hidden; filter: drop-shadow(22px 26px 18px rgba(49, 32, 19, .16)); }
-.story-bag .bag-label-mark { z-index: 5; transform: rotate(7deg) translateZ(8px); }
-.bag-mouth, .bag-back-fold, .bag-front-fold { position: absolute; inset: 0; width: 100%; height: 100%; transform-style: preserve-3d; backface-visibility: hidden; pointer-events: none; }
-.bag-mouth img, .bag-back-fold img, .bag-front-fold img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.bag-mouth { z-index: 4; clip-path: polygon(21% 6%, 35% 5%, 80% 11%, 78% 18%, 40% 17%, 19% 13%); transform-origin: 50% 13%; transform: translateZ(27px) rotateX(10deg) scaleY(var(--mouth-scale, .001)); }
-.bag-back-fold { z-index: 1; opacity: var(--opening, 0); clip-path: polygon(21% 7%, 35% 5%, 79% 11%, 76% 13%, 36% 9%, 22% 10%); transform-origin: 50% 12%; transform: translateY(var(--back-lift, 0px)) translateZ(8px) rotateX(var(--back-angle, 0deg)); }
-.bag-front-fold { z-index: 3; clip-path: polygon(22% 5%, 79% 10%, 77% 28%, 72% 29%, 27% 24%, 19% 20%); transform-origin: 50% 28%; transform: translateY(var(--seal-offset, 0px)) translateZ(22px) rotateX(var(--front-angle, 0deg)); filter: brightness(var(--fold-brightness, 1)) drop-shadow(0 var(--fold-shadow, 0px) 7px rgba(42, 28, 17, .5)); }
-.bag-front-fold::after { position: absolute; top: 22%; left: 23%; width: 55%; height: 2px; opacity: var(--opening, 0); background: linear-gradient(90deg, transparent, rgba(67, 43, 27, .65), transparent); content: ""; transform: rotate(5deg); }
+/* The animated bag is one WebGL model. Keep the still image only as a loading fallback. */
+.bag-3d-shell { position: relative; display: block; width: min(27vw, 410px); min-width: 290px; aspect-ratio: 2 / 3; }
+.bag-3d-shell canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.bag-3d-shell .bag-fallback { position: absolute; inset: 0; }
+.bag-3d-shell .bag-fallback > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.bag-3d-shell.is-rendered .bag-fallback { display: none; }
+.hero-bag { width: min(34vw, 470px); }
+.story-bag { width: min(36vw, 440px); min-width: 290px; }
+.stage-product { overflow: visible; }
 
 @media (max-width: 760px) {
   .brand-wordmark strong { font-size: 12px; }
@@ -679,6 +677,7 @@ body { font-size: 17px; }
   .eyebrow { font-size: 13px; }
   .hero-lede { font-size: 17px; }
   .button, .text-link { font-size: 15px; }
+  .hero-bag { width: min(72vw, 345px); min-width: 0; }
   .unseal-track { height: 335svh; }
   .unseal-pin { position: sticky; top: 0; display: grid; height: 100svh; min-height: 0; }
   .unseal-stage { display: grid; width: calc(100% - 46px); height: 100svh; min-height: 0; grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr) auto; align-items: center; gap: 0; }
@@ -686,8 +685,7 @@ body { font-size: 17px; }
   .stage-intro h2 { max-width: none; font-size: clamp(36px, 10vw, 55px); }
   .stage-counter { margin-top: 8px; }
   .stage-product { height: 100%; min-height: 0; }
-  .story-bag { width: min(56vw, 300px); min-width: 0; }
-  .story-beans { top: 25%; right: 10%; width: 72px; }
+  .story-bag { width: min(70vw, 320px); min-width: 0; }
   .stage-copy { align-self: start; padding: 0 0 27px; }
   .stage-copy h3 { max-width: none; font-size: 30px; }
   .stage-scroll-hint { display: none; }
@@ -699,5 +697,4 @@ body { font-size: 17px; }
   .unseal-track { height: auto; }
   .unseal-pin { position: relative; height: auto; min-height: 0; }
   .unseal-stage { min-height: 560px; }
-  .story-bag { --opening: 1; --mouth-scale: 1; --front-angle: -65deg; --back-angle: 24deg; --back-lift: -11px; --seal-offset: -3px; --fold-shadow: 11px; --fold-brightness: .86; }
 }

@@ -93,21 +93,10 @@
     const travel = Math.max(1, story.offsetHeight - window.innerHeight);
     const progress = clamp(-bounds.top / travel);
     const chapter = Math.min(chapters.length - 1, Math.floor(progress * chapters.length));
-    const seal = ease((progress - 0.05) / 0.22);
-    const opening = ease((progress - 0.08) / 0.42);
-    const mouth = ease((progress - 0.1) / 0.3);
+    const opening = ease((progress - 0.08) / 0.75);
 
     updateChapter(chapter);
-    storyBag.style.setProperty("--opening", String(opening));
-    storyBag.style.setProperty("--mouth-scale", String(0.001 + mouth * 0.999));
-    storyBag.style.setProperty("--front-angle", `${-65 * opening}deg`);
-    storyBag.style.setProperty("--back-angle", `${24 * opening}deg`);
-    storyBag.style.setProperty("--back-lift", `${-11 * opening}px`);
-    storyBag.style.setProperty("--bag-y", `${-7 + 10 * opening}deg`);
-    storyBag.style.setProperty("--bag-x", `${1 - 3 * opening}deg`);
-    storyBag.style.setProperty("--seal-offset", `${-3 * seal}px`);
-    storyBag.style.setProperty("--fold-shadow", `${11 * opening}px`);
-    storyBag.style.setProperty("--fold-brightness", String(1 - 0.14 * opening));
+    window.coffeeBag3D?.setProgress(opening);
   };
 
   const requestStoryUpdate = () => {
