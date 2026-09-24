@@ -53,7 +53,7 @@ button { font: inherit; }
 .eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 24px; color: var(--roast); font-family: var(--mono); font-size: 10px; letter-spacing: .13em; line-height: 1.5; text-transform: uppercase; }
 .eyebrow-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--caramel); box-shadow: 0 0 0 4px rgba(189, 133, 85, .15); }
 h1, h2, h3, p { margin-top: 0; }
-.hero h1 { margin: 0 0 24px; font-family: var(--display); font-size: clamp(58px, 7.3vw, 112px); font-weight: 500; letter-spacing: -.065em; line-height: .98; }
+.hero h1 { margin: 0 0 24px; font-family: var(--display); font-size: clamp(58px, 6vw, 100px); font-weight: 500; letter-spacing: -.065em; line-height: .98; }
 .hero h1 em, h2 em { color: var(--caramel); font-weight: 500; }
 .hero-lede { max-width: 445px; margin-bottom: 27px; color: #665a4e; font-size: 15px; line-height: 1.8; }
 .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 26px; }
@@ -442,7 +442,7 @@ body { background: var(--cream); font-family: var(--sans); }
 .eyebrow { margin-bottom: 20px; color: #7a6048; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .eyebrow-dot { display: none; }
 h1, h2, h3, p { font-family: var(--sans); }
-.hero h1 { max-width: 640px; font-size: clamp(54px, 7vw, 102px); font-weight: 500; letter-spacing: -.075em; line-height: .93; }
+.hero h1 { max-width: 640px; font-size: clamp(54px, 5.5vw, 92px); font-weight: 500; letter-spacing: -.075em; line-height: .93; }
 .hero h1 em, h2 em { color: var(--caramel); font-style: italic; font-weight: 500; }
 .hero-lede { max-width: 380px; font-size: 14px; line-height: 1.7; }
 .button { border-radius: 2px; }
@@ -659,14 +659,16 @@ body { font-size: 17px; }
 .footer-place, .back-top { font-size: 14px; letter-spacing: 0; }
 .label-line, .label-main, .label-note, .tiny-label, .cup-center, .table-stamp, .circle-note, .crawl-ticket, .map-coordinate, .route-label, .map-compass, .crawl-sticker, .map-doodle, .passport, .ig-tag { font-family: var(--sans); }
 
-/* The animated bag is one WebGL model. Keep the still image only as a loading fallback. */
-.bag-3d-shell { position: relative; display: block; width: min(27vw, 410px); min-width: 290px; aspect-ratio: 2 / 3; }
+/* The bag appears only when the WebGL scene is ready; the old photo has a blue seam. */
+.bag-3d-shell { position: relative; display: block; width: min(27vw, 410px); min-width: 290px; aspect-ratio: 2 / 3; opacity: 0; transition: opacity 240ms ease; }
 .bag-3d-shell canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-.bag-3d-shell .bag-fallback { position: absolute; inset: 0; }
-.bag-3d-shell .bag-fallback > img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.bag-3d-shell.is-rendered .bag-fallback { display: none; }
-.hero-bag { width: min(34vw, 470px); }
-.story-bag { width: min(36vw, 440px); min-width: 290px; }
+.bag-3d-shell.is-rendered, .bag-3d-shell.is-unavailable { opacity: 1; }
+.bag-3d-shell.is-unavailable { background: url('/images/bag-front-artwork.webp') center / contain no-repeat; }
+.bag-3d-shell.is-unavailable canvas { display: none; }
+.bag-3d-shell.is-unavailable::before { position: absolute; top: 26%; left: 50%; width: 20%; aspect-ratio: 1; border-radius: 50%; background: url('/images/psucoffee-logo.jpg') center / cover; content: ''; transform: translateX(-50%); }
+.bag-3d-shell.is-unavailable::after { position: absolute; top: 39%; left: 0; width: 100%; color: #4c3528; content: 'PENN STATE\A COFFEE CLUB'; font-size: clamp(17px, 2vw, 27px); line-height: 1; text-align: center; white-space: pre; }
+.hero-bag { width: min(34vw, 470px, 48vh); }
+.story-bag { width: min(36vw, 440px, 45vh); min-width: 260px; }
 .stage-product { overflow: visible; }
 
 @media (max-width: 760px) {

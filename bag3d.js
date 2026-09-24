@@ -336,22 +336,27 @@ function mountBag(container, frontTexture, beanTexture, opening = 0) {
   return { setProgress, resize, observer };
 }
 
-const [frontTexture, beanImage] = await Promise.all([makeFrontTexture(), loadImage(BEAN_ART)]);
-const beanTexture = new THREE.Texture(beanImage);
-beanTexture.colorSpace = THREE.SRGBColorSpace;
-beanTexture.anisotropy = 8;
-beanTexture.needsUpdate = true;
-const hero = document.querySelector('[data-bag-scene="hero"]');
-const story = document.querySelector('[data-bag-scene="story"]');
-if (hero) mountBag(hero, frontTexture, beanTexture, 0);
-if (story) {
-  const model = mountBag(story, frontTexture, beanTexture, 0);
-  window.coffeeBag3D = model;
-  const track = document.querySelector(".unseal-track");
-  if (track) {
-    const travel = Math.max(1, track.offsetHeight - window.innerHeight);
-    const progress = clamp(-track.getBoundingClientRect().top / travel);
-    const t = clamp((progress - 0.08) / 0.75);
-    model.setProgress(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : t * t * (3 - 2 * t));
+try {
+  const [frontTexture, beanImage] = await Promise.all([makeFrontTexture(), loadImage(BEAN_ART)]);
+  const beanTexture = new THREE.Texture(beanImage);
+  beanTexture.colorSpace = THREE.SRGBColorSpace;
+  beanTexture.anisotropy = 8;
+  beanTexture.needsUpdate = true;
+  const hero = document.querySelector('[data-bag-scene="hero"]');
+  const story = document.querySelector('[data-bag-scene="story"]');
+  if (hero) mountBag(hero, frontTexture, beanTexture, 0);
+  if (story) {
+    const model = mountBag(story, frontTexture, beanTexture, 0);
+    window.coffeeBag3D = model;
+    const track = document.querySelector(".unseal-track");
+    if (track) {
+      const travel = Math.max(1, track.offsetHeight - window.innerHeight);
+      const progress = clamp(-track.getBoundingClientRect().top / travel);
+      const t = clamp((progress - 0.08) / 0.75);
+      model.setProgress(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : t * t * (3 - 2 * t));
+    }
   }
+} catch (error) {
+  document.querySelectorAll('[data-bag-scene]').forEach((container) => container.classList.add('is-unavailable'));
+  console.error('Coffee bag 3D scene could not load:', error);
 }
