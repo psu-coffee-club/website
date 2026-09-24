@@ -241,7 +241,8 @@ h1, h2, h3, p { margin-top: 0; }
 .ig-topline { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px 10px; color: var(--caramel); font-family: var(--mono); font-size: 7px; letter-spacing: .09em; }
 .ig-topline a { color: var(--navy); font-size: 7px; text-decoration: none; }
 .instagram-frame { display: flex; min-height: 0; justify-content: center; overflow: hidden; background: #eee5d5; }
-.instagram-frame .instagram-media { min-width: 0 !important; max-width: 100% !important; width: 100% !important; min-height: 420px; margin: 0 !important; border: 0 !important; border-radius: 0 !important; background: #eee5d5 !important; box-shadow: none !important; }
+.instagram-frame .instagram-media { position: relative !important; min-width: 0 !important; max-width: 100% !important; width: 100% !important; min-height: 420px; margin: 0 !important; border: 0 !important; border-radius: 0 !important; background: #eee5d5 !important; box-shadow: none !important; }
+.instagram-frame .instagram-media-registered { display: none; }
 .ig-caption { margin: 11px 4px 2px; color: #6a5b4d; font-family: var(--display); font-size: 16px; font-style: italic; }
 
 .board-section { padding-top: 130px; padding-bottom: 120px; }
@@ -526,10 +527,10 @@ h1, h2, h3, p { font-family: var(--sans); }
 .passport-stamp { border-color: #a65f45; color: #a65f45; }
 .trip-beans { top: 12%; right: 8%; width: 118px; transform: rotate(7deg); }
 .moments-section { background: transparent; }
-.instagram-grid { gap: 18px; }
-.ig-card { border: 0; background: transparent; }
+.instagram-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr)); gap: 36px 18px; }
+.ig-card { width: 100%; max-width: 540px; padding: 0; border: 0; background: transparent; }
 .ig-topline { color: #846147; font-family: var(--sans); font-size: 9px; letter-spacing: .05em; }
-.ig-topline a { font-family: var(--sans); font-size: 9px; }
+.ig-topline a { flex-shrink: 0; font-family: var(--sans); font-size: 9px; }
 .ig-caption { color: #554438; font-family: var(--sans); font-size: 14px; font-style: normal; }
 .board-section { padding-top: 112px; padding-bottom: 95px; }
 .board-heading > p { display: none; }
