@@ -33,7 +33,11 @@
   const pageProgressFill = document.querySelector(".page-progress span");
   const cues = [...document.querySelectorAll("[data-cue]")];
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const compactScreen = window.matchMedia("(max-width: 760px)");
+  const clamp = (value) => Math.min(1, Math.max(0, value));
+  const ease = (value) => {
+    const t = clamp(value);
+    return t * t * (3 - 2 * t);
+  };
   const chapters = [
     {
       name: "Brew Team",
@@ -84,18 +88,26 @@
     const fullPageTravel = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
     const pageProgress = Math.min(1, Math.max(0, window.scrollY / fullPageTravel));
     if (pageProgressFill) pageProgressFill.style.transform = `scaleX(${pageProgress})`;
-    if (!story || !storyBag || compactScreen.matches || reducedMotion.matches) return;
+    if (!story || !storyBag || reducedMotion.matches) return;
     const bounds = story.getBoundingClientRect();
     const travel = Math.max(1, story.offsetHeight - window.innerHeight);
-    const progress = Math.min(1, Math.max(0, -bounds.top / travel));
+    const progress = clamp(-bounds.top / travel);
     const chapter = Math.min(chapters.length - 1, Math.floor(progress * chapters.length));
-    const opening = Math.min(1, Math.max(0, (progress - 0.03) / 0.38));
+    const seal = ease((progress - 0.05) / 0.22);
+    const opening = ease((progress - 0.08) / 0.42);
+    const mouth = ease((progress - 0.1) / 0.3);
 
     updateChapter(chapter);
     storyBag.style.setProperty("--opening", String(opening));
-    storyBag.style.setProperty("--open-right", `${opening * 20}%`);
-    storyBag.style.setProperty("--open-left", `${opening * 15}%`);
-    storyBag.style.setProperty("--open-extent", `${opening * 100}%`);
+    storyBag.style.setProperty("--mouth-scale", String(0.001 + mouth * 0.999));
+    storyBag.style.setProperty("--front-angle", `${-65 * opening}deg`);
+    storyBag.style.setProperty("--back-angle", `${24 * opening}deg`);
+    storyBag.style.setProperty("--back-lift", `${-11 * opening}px`);
+    storyBag.style.setProperty("--bag-y", `${-7 + 10 * opening}deg`);
+    storyBag.style.setProperty("--bag-x", `${1 - 3 * opening}deg`);
+    storyBag.style.setProperty("--seal-offset", `${-3 * seal}px`);
+    storyBag.style.setProperty("--fold-shadow", `${11 * opening}px`);
+    storyBag.style.setProperty("--fold-brightness", String(1 - 0.14 * opening));
   };
 
   const requestStoryUpdate = () => {
@@ -107,7 +119,6 @@
   if (story) {
     window.addEventListener("scroll", requestStoryUpdate, { passive: true });
     window.addEventListener("resize", requestStoryUpdate);
-    compactScreen.addEventListener("change", requestStoryUpdate);
     reducedMotion.addEventListener("change", requestStoryUpdate);
     requestStoryUpdate();
   } else {

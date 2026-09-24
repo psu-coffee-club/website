@@ -1,6 +1,6 @@
 # Penn State Coffee Club
 
-A single-page site built around the idea of opening a coffee bag and discovering a club evening inside it. The page uses plain HTML, CSS, and JavaScript so it can deploy as a static Vercel site.
+A single-page site built around opening a coffee bag and discovering a club evening inside it. The bag's seal, front fold, back fold, and mouth occupy one CSS 3D scene, with their angles driven by scroll position. Editorial typography uses Newsreader throughout. The page uses plain HTML, CSS, and JavaScript so it can deploy as a static Vercel site.
 
 ## Local preview
 
