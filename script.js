@@ -30,53 +30,37 @@
 
   const story = document.querySelector(".unseal-track");
   const storyBag = document.querySelector(".story-bag");
-  const progressFill = document.querySelector(".progress-fill");
+  const pageProgressFill = document.querySelector(".page-progress span");
   const cues = [...document.querySelectorAll("[data-cue]")];
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const compactScreen = window.matchMedia("(max-width: 760px)");
   const chapters = [
     {
-      time: "6:30 PM",
-      stamp: "6:30",
-      label: "THE FIRST POUR",
-      name: "The setup",
-      title: "The brew team<br />gets hands-on.",
-      description: "At 6:30, the Brew Team gets things moving — dialing in methods, learning the why behind each brew, and making enough for everyone to taste.",
+      name: "Brew Team",
+      label: "6:30 PM",
+      title: "We start with the brew team.",
     },
     {
-      time: "7:00 PM",
-      stamp: "7:00",
-      label: "THE ROOM OPENS",
-      name: "The gathering",
-      title: "The public meeting<br />begins.",
-      description: "At 7, everyone’s invited in. Talk coffee, try the week’s brew, play a game, and meet people who are happy to share the table.",
+      name: "Open table",
+      label: "7:00 PM",
+      title: "Everyone’s invited in.",
     },
     {
-      time: "EVERY WEEK",
-      stamp: "01—∞",
-      label: "LEARN BY TASTING",
-      name: "The discovery",
-      title: "A little knowledge<br />in every cup.",
-      description: "Each week brings a new angle on coffee — how it grows, how it brews, and how small choices change what you taste.",
+      name: "Taste together",
+      label: "EVERY WEEK",
+      title: "Taste something new.",
     },
     {
-      time: "6:30—8:00 PM",
-      stamp: "6:30—8",
-      label: "HUB-ROBESON · 102",
-      name: "The invitation",
-      title: "Room for<br />one more.",
-      description: "The official on-campus meeting runs from 6:30 to 8:00 PM every Thursday. Come for a pour; leave with a few new faces to say hi to next week.",
+      name: "Until next Thursday",
+      label: "HUB-ROBESON 102",
+      title: "Until next Thursday.",
     },
   ];
 
-  const chapterIndex = document.querySelector("#chapter-index");
   const chapterLabel = document.querySelector(".chapter-label");
-  const chapterTime = document.querySelector("#chapter-time");
   const chapterTitle = document.querySelector("#chapter-title");
-  const chapterDescription = document.querySelector("#chapter-description");
   const currentStep = document.querySelector("#current-step");
   const currentChapter = document.querySelector("#current-chapter");
-  const stampTime = document.querySelector("#stamp-time");
   let activeChapter = -1;
   let framePending = false;
 
@@ -84,14 +68,10 @@
     if (index === activeChapter) return;
     activeChapter = index;
     const chapter = chapters[index];
-    if (chapterIndex) chapterIndex.textContent = String(index + 1).padStart(2, "0");
-    if (chapterLabel) chapterLabel.innerHTML = `<span>${String(index + 1).padStart(2, "0")}</span> / ${chapter.label}`;
-    if (chapterTime) chapterTime.textContent = chapter.time;
-    if (chapterTitle) chapterTitle.innerHTML = chapter.title;
-    if (chapterDescription) chapterDescription.textContent = chapter.description;
+    if (chapterLabel) chapterLabel.textContent = chapter.label;
+    if (chapterTitle) chapterTitle.textContent = chapter.title;
     if (currentStep) currentStep.textContent = String(index + 1).padStart(2, "0");
     if (currentChapter) currentChapter.textContent = chapter.name;
-    if (stampTime) stampTime.textContent = chapter.stamp;
     cues.forEach((cue, cueIndex) => {
       cue.classList.toggle("is-active", cueIndex === index);
       if (cueIndex === index) cue.setAttribute("aria-current", "step");
@@ -101,19 +81,21 @@
 
   const renderStory = () => {
     framePending = false;
+    const fullPageTravel = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const pageProgress = Math.min(1, Math.max(0, window.scrollY / fullPageTravel));
+    if (pageProgressFill) pageProgressFill.style.transform = `scaleX(${pageProgress})`;
     if (!story || !storyBag || compactScreen.matches || reducedMotion.matches) return;
     const bounds = story.getBoundingClientRect();
     const travel = Math.max(1, story.offsetHeight - window.innerHeight);
     const progress = Math.min(1, Math.max(0, -bounds.top / travel));
     const chapter = Math.min(chapters.length - 1, Math.floor(progress * chapters.length));
-    const opening = Math.min(1, Math.max(0, (progress - 0.08) / 0.36));
-    const tilt = Math.sin(progress * Math.PI) * 7;
+    const opening = Math.min(1, Math.max(0, (progress - 0.03) / 0.38));
 
     updateChapter(chapter);
-    if (progressFill) progressFill.style.transform = `scaleX(${progress})`;
-    storyBag.style.transform = `translate3d(0, ${Math.sin(progress * Math.PI * 2) * 9}px, 0) rotateY(${tilt}deg) rotateZ(${(progress - 0.5) * -3}deg)`;
-    storyBag.querySelectorAll(".bag-sealed").forEach((image) => { image.style.opacity = String(1 - opening); });
-    storyBag.querySelectorAll(".bag-open").forEach((image) => { image.style.opacity = String(opening); });
+    storyBag.style.setProperty("--opening", String(opening));
+    storyBag.style.setProperty("--open-right", `${opening * 20}%`);
+    storyBag.style.setProperty("--open-left", `${opening * 15}%`);
+    storyBag.style.setProperty("--open-extent", `${opening * 100}%`);
   };
 
   const requestStoryUpdate = () => {
@@ -127,6 +109,10 @@
     window.addEventListener("resize", requestStoryUpdate);
     compactScreen.addEventListener("change", requestStoryUpdate);
     reducedMotion.addEventListener("change", requestStoryUpdate);
+    requestStoryUpdate();
+  } else {
+    window.addEventListener("scroll", requestStoryUpdate, { passive: true });
+    window.addEventListener("resize", requestStoryUpdate);
     requestStoryUpdate();
   }
 

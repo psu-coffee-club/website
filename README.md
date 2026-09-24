@@ -14,10 +14,11 @@ Then open `http://localhost:4173`.
 
 ## Site content
 
-- Weekly schedule: Thursdays at HUB-Robeson 102; Brew Team at 6:30 PM, public meeting at 7 PM, official campus block 6:30–8 PM.
+- Weekly schedule: Thursdays at HUB-Robeson 102; Brew Team at 6:30 PM, public meeting at 7 PM, official campus block from 6:30 PM to 8 PM.
 - Board names and roles reflect the supplied current officer list.
 - Instagram posts are embedded from the public @psucoffee account.
-- The coffee bag artwork is original generated art. The header seal and board portraits are temporary treatments pending the club’s approved originals.
+- The coffee bag and bean artwork are generated for this site. The club seal is a locally stored copy of the public Instagram profile image.
+- The board is presented as a typographic roster until approved portraits are available.
 
 ## Image files
 
