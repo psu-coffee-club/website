@@ -24,3 +24,9 @@ Then open `http://localhost:4173`.
 ## Image files
 
 The PNGs preserve the generated source images. The page uses the smaller WebP versions for faster loading.
+
+## Bag rendering
+
+The bag uses physical paper materials, a metallic lining, and a procedural linear HDR studio environment. On desktop viewports of at least 900px with a fine pointer and floating-point render targets, the story scene loads the vendored `three-gpu-pathtracer` 0.0.24 renderer after the pose settles. It accumulates up to 96 samples with four light bounces, then stops. Scroll movement cancels accumulation immediately and uses the physical raster renderer. Mobile and unsupported devices keep the physical renderer. Rendering pauses when the bag is off screen or the document is hidden.
+
+The path tracer and its BVH dependency are bundled in `vendor/pathtracer.js`; their MIT licenses are in `vendor/PATHTRACER_LICENSES.txt`.

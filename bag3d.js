@@ -69,7 +69,8 @@ function facePoint(face, u, v, progress) {
   const edgeWeight = Math.pow(Math.abs(u), 3);
   const bottomFold = Math.exp(-Math.pow((v - 0.09 - 0.075 * Math.abs(u)) / 0.055, 2));
   const shoulderFold = Math.exp(-Math.pow((v - 0.75 + 0.13 * Math.abs(u)) / 0.065, 2));
-  const fold = (0.068 * bottomFold - 0.045 * shoulderFold * (1 - 0.55 * open)) * edgeWeight;
+  const fineCrease = 0.014 * Math.sin(54 * v + 12 * u) * Math.exp(-Math.pow((Math.abs(u) - 0.9) / 0.12, 2)) * Math.sin(Math.PI * v);
+  const fold = fineCrease + (0.068 * bottomFold - 0.045 * shoulderFold * (1 - 0.55 * open)) * edgeWeight;
   const bow = 0.032 * Math.sin(2.5 * Math.PI * v + u * 1.4) * Math.sin(Math.PI * v) * edgeWeight;
   const lipBend = smooth(0.86, 1, v) * open * centre;
   const x = u * halfWidth + 0.025 * tension * Math.sin(Math.PI * v);
@@ -111,6 +112,19 @@ function paperGrain() {
     data.data[i] = data.data[i + 1] = data.data[i + 2] = value;
     data.data[i + 3] = 255;
   }
+  // Tangent-space fibre normals work in both the physical and path-traced renderers.
+  const heights = new Uint8ClampedArray(data.data);
+  for (let y = 0; y < 256; y++) {
+    for (let x = 0; x < 256; x++) {
+      const i = (y * 256 + x) * 4;
+      const dx = (heights[(y * 256 + (x + 1) % 256) * 4] - heights[i]) / 255;
+      const dy = (heights[(((y + 1) % 256) * 256 + x) * 4] - heights[i]) / 255;
+      const length = Math.sqrt(dx * dx + dy * dy + 1);
+      data.data[i] = 128 - dx / length * 127;
+      data.data[i + 1] = 128 - dy / length * 127;
+      data.data[i + 2] = 128 + 127 / length;
+    }
+  }
   context.putImageData(data, 0, 0);
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -119,8 +133,8 @@ function paperGrain() {
 }
 
 function makeWall(wall, material, inside = false) {
-  const cols = wall === 'front' || wall === 'back' ? 40 : 16;
-  const rows = 48;
+  const cols = wall === 'front' || wall === 'back' ? 64 : 24;
+  const rows = 80;
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array((cols + 1) * (rows + 1) * 3);
   const uv = new Float32Array((cols + 1) * (rows + 1) * 2);
@@ -133,7 +147,7 @@ function makeWall(wall, material, inside = false) {
       uv[index * 2] = col / cols;
       uv[index * 2 + 1] = v;
       // The lining loses light progressively towards the bottom of the bag.
-      const light = inside ? 0.035 + 0.55 * Math.pow(v, 4) : 1;
+      const light = inside ? 0.08 + 0.72 * Math.pow(v, 3) : 1;
       colors[index * 3] = colors[index * 3 + 1] = colors[index * 3 + 2] = light;
       if (row < rows && col < cols) {
         const a = index, b = a + 1, c = a + cols + 1, d = c + 1;
@@ -228,15 +242,105 @@ function makeContactShadow() {
   return mesh;
 }
 
+// Linear HDR studio environment: broad softboxes give paper and foil a shared light field.
+function makeStudioEnvironment() {
+  const width = 512, height = 256;
+  const pixels = new Float32Array(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const u = x / width, v = y / height;
+      const softbox = (cx, cy, sx, sy, power) => power * Math.exp(-Math.pow((u - cx) / sx, 8) - Math.pow((v - cy) / sy, 8));
+      const light = 0.16 + 0.2 * (1 - v) + softbox(0.22, 0.33, 0.055, 0.18, 4.5)
+        + softbox(0.71, 0.38, 0.08, 0.2, 2.1) + softbox(0.48, 0.13, 0.16, 0.055, 2.8);
+      const i = (y * width + x) * 4;
+      pixels[i] = light; pixels[i + 1] = light * 0.96; pixels[i + 2] = light * 0.89; pixels[i + 3] = 1;
+    }
+  }
+  const texture = new THREE.DataTexture(pixels, width, height, THREE.RGBAFormat, THREE.FloatType);
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+// Geometry changes invalidate accumulated rays. Rasterize during motion and accumulate
+// only after the pose settles; never rebuild a BVH in the scroll animation loop.
+function makeRefinement(renderer, scene, camera, container) {
+  const eligible = container.dataset.bagScene === 'story'
+    && window.matchMedia('(min-width: 900px) and (pointer: fine)').matches
+    && renderer.extensions.has('EXT_color_buffer_float');
+  let tracer, loading, timer = 0, frame = 0, generation = 0, visible = false, failed = false;
+  const cancel = () => {
+    container.dataset.renderMode = 'physical';
+    generation++;
+    clearTimeout(timer);
+    cancelAnimationFrame(frame);
+    timer = frame = 0;
+  };
+  const schedule = () => {
+    if (!eligible || !visible || document.hidden || failed) return;
+    clearTimeout(timer);
+    const token = generation;
+    timer = setTimeout(async () => {
+      try {
+        if (!tracer) {
+          loading ||= import('./vendor/pathtracer.js');
+          const { WebGLPathTracer } = await loading;
+          if (generation !== token || !visible || document.hidden) return;
+          tracer = new WebGLPathTracer(renderer);
+          tracer.bounces = 4;
+          tracer.filterGlossyFactor = 0.5;
+          tracer.tiles.set(3, 3);
+          tracer.renderScale = Math.min(1, 1.5 / renderer.getPixelRatio());
+          tracer.minSamples = 24;
+          tracer.fadeDuration = 1000;
+          tracer.renderDelay = 0;
+          tracer.textureSize.set(1024, 1536);
+        }
+        if (generation !== token || !visible || document.hidden) return;
+        scene.updateMatrixWorld(true);
+        tracer.setScene(scene, camera);
+        tracer.reset();
+        const sample = () => {
+          if (generation !== token || !visible || document.hidden) return;
+          try {
+            tracer.renderSample();
+            if (tracer.samples >= tracer.minSamples) container.dataset.renderMode = 'path-traced';
+            if (tracer.samples < 96) frame = requestAnimationFrame(sample);
+          } catch (error) {
+            failed = true;
+            renderer.render(scene, camera);
+            console.warn('Bag refinement unavailable; using physical renderer.', error);
+          }
+        };
+        frame = requestAnimationFrame(sample);
+      } catch (error) {
+        failed = true;
+        renderer.render(scene, camera);
+        console.warn('Bag refinement unavailable; using physical renderer.', error);
+      }
+    }, 450);
+  };
+  if (eligible) {
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) schedule(); else cancel();
+    }, { threshold: 0.15 }).observe(container);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) cancel(); else schedule();
+    });
+  }
+  return { cancel, schedule };
+}
+
 function mountBag(container, frontTexture) {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'default' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 1.02;
   renderer.setClearColor(0x000000, 0);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.domElement.setAttribute('aria-hidden', 'true');
   container.append(renderer.domElement);
 
@@ -244,26 +348,27 @@ function mountBag(container, frontTexture) {
   const camera = new THREE.OrthographicCamera(-2, 2, 2.4, -2.4, 0.1, 30);
   camera.position.set(0, 2.45, 8.5);
   camera.lookAt(0, 0, 0);
-  scene.add(new THREE.HemisphereLight(0xfff8ed, 0x7c6956, 1.55));
-  const key = new THREE.DirectionalLight(0xfff9f1, 2.8);
+  scene.environment = makeStudioEnvironment();
+  scene.environmentIntensity = 0.8;
+  const key = new THREE.DirectionalLight(0xfff9f1, 2.0);
   key.position.set(-3.5, 5.5, 5);
   key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.mapSize.set(2048, 2048);
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 4, bottom: -3, near: 0.1, far: 20 });
   key.shadow.bias = -0.0003;
   key.shadow.normalBias = 0.015;
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0xffecd2, 0.6);
+  const fill = new THREE.DirectionalLight(0xffecd2, 0.35);
   fill.position.set(4, 1, 4);
   scene.add(fill);
-  const edge = new THREE.DirectionalLight(0xffffff, 1.2);
+  const edge = new THREE.DirectionalLight(0xffffff, 0.7);
   edge.position.set(1, 3, -4);
   scene.add(edge);
 
   const grain = paperGrain();
-  const frontMaterial = new THREE.MeshStandardMaterial({ map: frontTexture, roughness: 0.88, bumpMap: grain, bumpScale: 0.012 });
-  const kraft = new THREE.MeshStandardMaterial({ color: 0xb79e7d, roughness: 0.94, bumpMap: grain, bumpScale: 0.018 });
-  const lining = new THREE.MeshStandardMaterial({ color: 0x776853, vertexColors: true, roughness: 0.64, metalness: 0.16 });
+  const frontMaterial = new THREE.MeshPhysicalMaterial({ map: frontTexture, roughness: 0.63,  normalMap: grain, normalScale: new THREE.Vector2(0.35, 0.35), clearcoat: 0.12, clearcoatRoughness: 0.6 });
+  const kraft = new THREE.MeshPhysicalMaterial({ color: 0xb5a18b, roughness: 0.7,  normalMap: grain, normalScale: new THREE.Vector2(0.4, 0.4), clearcoat: 0.08, clearcoatRoughness: 0.65 });
+  const lining = new THREE.MeshStandardMaterial({ color: 0xb8b2a8, vertexColors: true, roughness: 0.34, metalness: 0.82,  normalMap: grain, normalScale: new THREE.Vector2(0.18, 0.18) });
   const lip = new THREE.MeshStandardMaterial({ color: 0xb9a78d, roughness: 0.66, side: THREE.DoubleSide });
   const zipper = new THREE.MeshStandardMaterial({ color: 0x72624f, roughness: 0.7, side: THREE.DoubleSide });
   const bag = new THREE.Group();
@@ -284,7 +389,9 @@ function mountBag(container, frontTexture) {
   let target = 0;
   let frame = 0;
   let previousTime = 0;
+  const refinement = makeRefinement(renderer, scene, camera, container);
   const draw = (value) => {
+    refinement.cancel();
     deformers.forEach(part => part.update(value));
     const turn = smooth(0, 0.75, value);
     bag.rotation.y = mix(-0.33, -0.54, turn);
@@ -299,7 +406,7 @@ function mountBag(container, frontTexture) {
     if (Math.abs(target - current) < 0.00025) current = target;
     draw(current);
     if (current !== target && !document.hidden) frame = requestAnimationFrame(tick);
-    else previousTime = 0;
+    else { previousTime = 0; refinement.schedule(); }
   };
   const setProgress = (value, immediate = false) => {
     const next = clamp(value);
@@ -308,6 +415,7 @@ function mountBag(container, frontTexture) {
       frame = 0;
       current = target = next;
       draw(current);
+      refinement.schedule();
       return;
     }
     if (target === next) return;
@@ -325,6 +433,7 @@ function mountBag(container, frontTexture) {
     camera.bottom = -span / 2;
     camera.updateProjectionMatrix();
     draw(current);
+    refinement.schedule();
   };
   const observer = new ResizeObserver(resize);
   observer.observe(container);
