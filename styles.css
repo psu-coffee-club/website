@@ -742,3 +742,20 @@ body { font-size: 17px; }
   .crawl-photo-feature img, .journal-photo img { transition: none; }
   .crawl-photo-feature > a:hover img { transform: none; }
 }
+
+/* Printed snapshots from the club's spring 2025 Pittsburgh crawl. */
+.trip-art.trip-photo-story { position: relative; display: block; min-height: clamp(480px, 42vw, 570px); isolation: isolate; }
+.trip-photo { position: absolute; display: block; padding: 7px; overflow: hidden; background: #fbf7ee; box-shadow: 9px 12px 0 rgba(73, 55, 43, .1); }
+.trip-photo img { display: block; width: 100%; height: auto; aspect-ratio: 1080 / 1161; object-fit: cover; }
+.trip-photo-friends { z-index: 2; top: 9%; left: 2%; width: 52%; transform: rotate(-4deg); }
+.trip-photo-crew { z-index: 1; top: 0; right: 0; width: 47%; transform: rotate(5deg); }
+.trip-photo-cup { z-index: 3; right: 2%; bottom: 8%; width: 38%; transform: rotate(-5deg); }
+.trip-photo-date { position: absolute; bottom: 0; left: 4%; color: #80634c; font-size: 14px; }
+
+@media (max-width: 760px) {
+  .trip-art.trip-photo-story { min-height: clamp(360px, 104vw, 480px); margin-top: 25px; }
+  .trip-photo-friends { width: 58%; }
+  .trip-photo-crew { width: 48%; }
+  .trip-photo-cup { right: 1%; width: 43%; }
+  .trip-photo-date { font-size: 13px; }
+}

@@ -16,14 +16,14 @@ Then open `http://localhost:4173`.
 
 - Weekly schedule: Thursdays at HUB-Robeson 102; Brew Team at 6:30 PM and general meeting at 7 PM.
 - Board names and roles reflect the supplied current officer list.
-- Instagram posts are embedded from the public @psucoffee account.
+- Selected @psucoffee feed photos are stored in `images/club/` and link back to their original posts. The "New city" collage uses slides 3, 7, and 9 from the [April 2, 2025 Pittsburgh crawl post](https://www.instagram.com/psucoffee/p/DH9upbUMZwv/).
 - The flat bag artwork is generated for this site and applied to the model as a texture. The club seal is a locally stored copy of the public Instagram profile image.
 - The WebGL scene uses a vendored copy of Three.js 0.186.0 under its MIT license.
 - The board is presented as a typographic roster until approved portraits are available.
 
 ## Image files
 
-The PNGs preserve the generated source images. The page uses the smaller WebP versions for faster loading.
+The PNGs preserve the generated bag artwork. The page uses smaller WebP versions for those generated assets. Club photographs are local JPEG copies of their Instagram images.
 
 ## Bag rendering
 
@@ -33,4 +33,4 @@ The path tracer and its BVH dependency are bundled in `vendor/pathtracer.js`; th
 
 ## Club film
 
-The user-supplied 37-second club film appears above the Instagram posts. `videos/coffee-club-film.mp4` is a 1080p H.264/AAC web copy with fast-start metadata; the original 4K MOV remains outside the repository. The player uses native controls, inline playback, an extracted poster frame, and no autoplay or video preloading.
+The user-supplied 37-second club film appears above the photo journal. `videos/coffee-club-film.mp4` is a 1080p H.264/AAC web copy with fast-start metadata; the original 4K MOV remains outside the repository. The player uses native controls, inline playback, an extracted poster frame, and no autoplay or video preloading.
