@@ -789,16 +789,6 @@ body { font-size: 17px; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .link-arrow { display: inline-block; width: .9em; height: .9em; flex: 0 0 auto; vertical-align: -.08em; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .hero-copy, .hero-art, .crawl-copy, .crawl-visual, .trip-copy, .trip-art, .section-heading > div { min-width: 0; }
-.crawl-paper.crawl-poster { display: flex; flex-direction: column; align-items: flex-start; width: min(100%, 440px); aspect-ratio: auto; padding: clamp(24px, 3vw, 42px); overflow: visible; transform: rotate(-2deg); }
-.crawl-poster::before, .crawl-poster::after { display: none; }
-.crawl-poster-kicker { margin: 0 0 20px; font-size: 15px; color: #78604b; }
-.crawl-poster-title { margin: 0 0 28px; font-size: clamp(48px, 5vw, 72px); letter-spacing: -.065em; line-height: .95; }
-.crawl-poster-title em { color: var(--caramel); }
-.crawl-stops { position: relative; display: grid; gap: 17px; padding: 0 0 0 24px; margin: 0 0 28px; list-style: none; font-size: 19px; line-height: 1.25; }
-.crawl-stops::before { position: absolute; top: 10px; bottom: 10px; left: 3px; width: 1px; background: #b58f71; content: ''; }
-.crawl-stops li { position: relative; }
-.crawl-stops li::before { position: absolute; left: -24px; top: .4em; width: 7px; height: 7px; border: 1px solid #8b6347; border-radius: 50%; background: #efe7d9; content: ''; }
-.crawl-poster-footer { margin: auto 0 0; padding-top: 16px; width: 100%; border-top: 1px solid var(--line); color: #78604b; font-size: 13px; }
 .crawl-photo-feature { margin-top: 0; }
 .board-socials a { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; }
 .board-socials { gap: 0 22px; margin-top: 12px; }
@@ -834,15 +824,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .ritual-meta, .ritual-meta span:last-child { font-size: 14px; }
   .crawl-story { gap: 36px; }
   .crawl-visual { min-height: 0; }
-  .crawl-paper.crawl-poster { transform: none; box-shadow: 5px 7px 0 rgba(72,54,39,.07); }
   .crawl-photo-feature { margin: 0 var(--page-gutter) 12px; }
   .crawl-photo-feature img { height: auto; aspect-ratio: 3 / 2; object-fit: contain; }
   .crawl-photo-feature figcaption { padding: 12px 0 0; font-size: 14px; line-height: 1.4; }
   .trip-section { grid-template-columns: 1fr; gap: 28px; }
   .trip-copy > p:not(.eyebrow) { max-width: 55ch; }
-  .trip-art.trip-photo-story { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; min-height: 0; margin: 0; }
-  .trip-photo { position: static; width: auto; padding: 5px; transform: none; box-shadow: none; }
-  .trip-photo-date { position: static; grid-column: 1 / -1; font-size: 14px; }
   .photo-journal { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; gap: 24px 18px; }
   .journal-photo-lead { grid-column: 1 / -1; grid-row: auto; }
   .journal-photo img { flex: none; height: auto; aspect-ratio: 1; }
@@ -889,13 +875,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .ritual-card > p { max-width: 45ch; }
   .crawl-story { grid-template-columns: 1fr; gap: 28px; padding-bottom: 28px; }
   .crawl-copy { grid-row: 1; }
-  .crawl-paper.crawl-poster { width: 100%; max-width: 440px; padding: 24px; }
-  .crawl-poster-title { font-size: 54px; }
-  .crawl-stops { font-size: 18px; }
-  .trip-art.trip-photo-story { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .trip-photo-friends { grid-column: 1 / -1; }
-  .trip-photo-friends img { aspect-ratio: 4 / 3; object-position: center 35%; }
-  .trip-photo-date { margin-top: 2px; }
   .journal-photo figcaption { font-size: 14px; gap: 6px; }
   .journal-photo b { font-size: 12px; }
   .instagram-section { padding-top: 20px; }
@@ -939,4 +918,28 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .unseal-pin, .unseal-stage { height: auto; min-height: 0; }
   .unseal-stage { padding-block: 24px; }
   .stage-product { min-height: 280px; }
+}
+
+/* Keep the original illustrated map; allocate each annotation its own space on touch layouts. */
+@media (max-width: 1024px) {
+  .crawl-paper { container-type: inline-size; width: min(100%, 440px); aspect-ratio: 1.08; transform: rotate(-2deg); }
+  .crawl-paper::before { inset: 6%; }
+  .crawl-sticker { top: 32%; left: 12%; width: 36%; height: 34%; padding: 8px; padding: 2.5cqw; box-shadow: 3px 4px 0 rgba(72,54,39,.1); transform: rotate(-7deg); }
+  .crawl-sticker b { font-size: 19px; font-size: clamp(17px, 6cqw, 27px); }
+  .crawl-sticker span, .crawl-sticker small { font-size: 7px; font-size: clamp(7px, 2cqw, 9px); letter-spacing: .04em; }
+  .map-coordinate { font-size: 9px; letter-spacing: .04em; }
+  .coord-one { top: 9%; left: 10%; }
+  .coord-two { right: 9%; bottom: 5%; font-size: 8px; }
+  .map-compass { top: 8%; right: 10%; font-size: 9px; }
+  .map-compass b { font-size: 16px; }
+  .route-label { max-width: 42%; font-size: 10px; line-height: 1.25; letter-spacing: .035em; }
+  .label-one { top: 22%; left: 46%; }
+  .label-two { top: 49%; left: 65%; max-width: 27%; }
+  .label-three { top: auto; bottom: 18%; left: 12%; max-width: 38%; }
+  .map-doodle { right: 10%; bottom: 13%; font-size: 13px; line-height: 1.1; }
+  .route-line { top: 44%; left: 13%; width: 71%; }
+  .route-line::before, .route-line::after { width: 14px; height: 14px; transform: translateY(-8px); }
+  .dot-one { top: 39%; left: 53%; width: 8px; height: 8px; }
+  .dot-two { top: 33%; left: 77%; width: 6px; height: 6px; }
+  .dot-three { top: 72%; left: 30%; width: 6px; height: 6px; }
 }
