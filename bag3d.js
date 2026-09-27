@@ -1,7 +1,7 @@
 import * as THREE from "./vendor/three.module.js";
 
 const compactBag = window.matchMedia('(max-width: 760px)').matches || navigator.connection?.saveData;
-const FRONT_ART = compactBag ? '/images/bag-front-artwork-small.webp' : '/images/bag-front-artwork.webp';
+const FRONT_ART = compactBag ? '/images/bag-front-artwork-medium.webp' : '/images/bag-front-artwork.webp';
 const CLUB_SEAL = "/images/psucoffee-logo.jpg";
 const BOTTOM = -1.9;
 const HEIGHT = 3.8;
@@ -22,7 +22,7 @@ function loadImage(url) {
 async function makeFrontTexture() {
   const [art, seal] = await Promise.all([loadImage(FRONT_ART), loadImage(CLUB_SEAL)]);
   // The poster is already visible; don't hold the model behind every web font.
-  const scale = compactBag ? 0.5 : 1;
+  const scale = compactBag ? 0.75 : 1;
   const canvas = document.createElement("canvas");
   canvas.width = 1024 * scale;
   canvas.height = 1536 * scale;
@@ -43,7 +43,7 @@ async function makeFrontTexture() {
   context.fillText("COFFEE CLUB", 512, 754);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = compactBag ? 2 : 8;
+  texture.anisotropy = compactBag ? 4 : 8;
   return texture;
 }
 
@@ -247,7 +247,7 @@ function makeContactShadow() {
 
 // Linear HDR studio environment: broad softboxes give paper and foil a shared light field.
 function makeStudioEnvironment() {
-  const width = compactBag ? 128 : 256, height = compactBag ? 64 : 128;
+  const width = compactBag ? 256 : 512, height = compactBag ? 128 : 256;
   const pixels = new Float32Array(width * height * 4);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -337,7 +337,8 @@ function makeRefinement(renderer, scene, camera, container) {
 
 function mountBag(container, frontTexture) {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'default' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, compactBag ? 1.25 : 1.5));
+  const lowPower = navigator.connection?.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.02;
@@ -356,7 +357,7 @@ function mountBag(container, frontTexture) {
   const key = new THREE.DirectionalLight(0xfff9f1, 2.0);
   key.position.set(-3.5, 5.5, 5);
   key.castShadow = true;
-  key.shadow.mapSize.set(compactBag ? 512 : 1024, compactBag ? 512 : 1024);
+  key.shadow.mapSize.set(compactBag ? 1024 : 2048, compactBag ? 1024 : 2048);
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 4, bottom: -3, near: 0.1, far: 20 });
   key.shadow.bias = -0.0003;
   key.shadow.normalBias = 0.015;
