@@ -648,6 +648,13 @@ body { font-size: 17px; }
 .ig-caption { font-size: 18px; }
 .board-card > span { font-size: 14px; font-weight: 400; letter-spacing: 0; text-transform: none; }
 .board-card h3 { font-weight: 400; }
+.board-advisor { display: grid; grid-template-columns: 1fr 3fr; gap: 22px; align-items: baseline; min-width: 0; padding: 20px 4px 28px; border-top: 1px solid rgba(72, 54, 39, .32); }
+.board-advisor span { color: #816047; font-size: 14px; }
+.board-advisor h3 { min-width: 0; margin: 0; font-size: clamp(28px, 3.4vw, 48px); font-weight: 400; letter-spacing: -.06em; line-height: 1.06; }
+@media (max-width: 760px) {
+  .board-advisor { grid-template-columns: 1fr; gap: 19px; }
+  .board-advisor h3 { font-size: clamp(28px, 8vw, 42px); }
+}
 .join-email, .footer-mark { font-size: 16px; }
 .footer-place, .back-top { font-size: 14px; letter-spacing: 0; }
 .label-line, .label-main, .label-note, .tiny-label, .cup-center, .table-stamp, .circle-note, .crawl-ticket, .map-coordinate, .route-label, .map-compass, .crawl-sticker, .map-doodle, .passport, .ig-tag { font-family: var(--sans); }
