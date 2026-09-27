@@ -693,3 +693,10 @@ body { font-size: 17px; }
   .unseal-pin { position: relative; height: auto; min-height: 0; }
   .unseal-stage { min-height: 560px; }
 }
+
+/* The club film keeps its original framing and starts only on request. */
+.club-film { margin: 0 0 clamp(40px, 6vw, 80px); }
+.club-film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #16120f; object-fit: contain; }
+.club-film video:focus-visible { outline: 2px solid var(--caramel); outline-offset: 5px; }
+.club-film figcaption { display: flex; justify-content: space-between; gap: 20px; padding-top: 14px; color: #695d50; font-size: clamp(14px, 1.3vw, 18px); line-height: 1.3; }
+.club-film figcaption span:last-child { font-variant-numeric: tabular-nums; }
