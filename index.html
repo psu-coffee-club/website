@@ -22,13 +22,15 @@
     <meta name="twitter:image" content="https://psu.coffee/images/social/split-friends.jpg" />
     <meta name="twitter:image:alt" content="Two Penn State Coffee Club members making coffee together, beside the club name and logo." />
     <title>Penn State Coffee Club</title>
+    <script>if (location.hash) document.documentElement.classList.add('initial-anchor');</script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/images/bag-poster-small.webp" as="image" fetchpriority="high" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260927-crawl-map" />
+    <link rel="stylesheet" href="/styles.css?v=20260927-bag-perf" />
     <script defer src="/script.js?v=20260927-responsive"></script>
-    <script type="module" src="/bag3d.js?v=20260924-9"></script>
+    <script defer src="/bag-loader.js?v=20260927-1"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -76,7 +78,7 @@
           </div>
           <div class="hero-art" aria-label="A three-dimensional Penn State Coffee Club bag" role="img">
             <div class="orbit orbit-one"></div>
-            <div class="bag-3d-shell hero-bag" data-bag-scene="hero"></div>
+            <div class="bag-3d-shell hero-bag" data-bag-scene="hero"><img class="bag-poster" src="/images/bag-poster-small.webp" alt="" width="432" height="648" fetchpriority="high" decoding="async" /></div>
           </div>
         </section>
 
@@ -99,7 +101,7 @@
               </div>
               <div class="stage-product" aria-hidden="true">
                 <div class="stage-halo"></div>
-                <div class="bag-3d-shell story-bag" data-bag-scene="story"></div>
+                <div class="bag-3d-shell story-bag" data-bag-scene="story"><img class="bag-poster" src="/images/bag-poster-small.webp" alt="" width="432" height="648" loading="lazy" decoding="async" /></div>
               </div>
               <div class="stage-copy" aria-live="polite" aria-atomic="true">
                 <p class="chapter-label">6:30 PM</p>
