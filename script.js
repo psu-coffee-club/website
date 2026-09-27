@@ -41,7 +41,7 @@
       title: "We start with the brew team.",
     },
     {
-      name: "Open table",
+      name: "General meeting",
       label: "7:00 PM",
       title: "Everyone’s invited in.",
     },
@@ -115,9 +115,4 @@
     requestStoryUpdate();
   }
 
-  const instagramEmbed = document.createElement("script");
-  instagramEmbed.async = true;
-  instagramEmbed.src = "https://www.instagram.com/embed.js";
-  instagramEmbed.onload = () => window.instgrm?.Embeds?.process();
-  document.body.append(instagramEmbed);
 })();
