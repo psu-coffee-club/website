@@ -118,7 +118,7 @@
         const tide = Math.exp(-Math.pow((distance + 1.4) / 1.7, 2)) * .2;
         const pigment = .13 + .19 * noise(x / 12, y / 34) + .1 * pool;
         const fadeEnds = Math.min(1, y / 9, (height - 1 - y) / 12);
-        stainBase[index] = Math.min(.68, (body * pigment + tide + halo) * (.8 + fibres * .3)) * fadeEnds;
+        stainBase[index] = Math.min(.74, (body * pigment + tide + halo) * (.8 + fibres * .3) * 1.18) * fadeEnds;
         // The middle advances first; paper fibres wick sideways at different rates.
         stainArrival[index] = y + Math.abs(x - centre) * 1.3 + (noise(x / 9, y / 19) - .5) * 25;
         const i = index * 4;
