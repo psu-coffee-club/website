@@ -558,10 +558,11 @@ h1, h2, h3, p { font-family: var(--sans); }
 .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 18px; border-top: 1px solid rgba(72, 54, 39, .2); }
 .footer-mark { display: flex; align-items: center; gap: 9px; color: var(--espresso); font-size: 12px; font-weight: 600; text-decoration: none; }
 .footer-mark img { width: 35px; height: 35px; border-radius: 50%; }
-.footer-credit { display: flex; align-items: baseline; gap: 6px; margin: 0; color: #80634d; font-size: 14px; }
-.footer-credit a { display: inline-flex; align-items: baseline; gap: 3px; color: var(--espresso); font-size: 17px; font-style: italic; text-decoration-color: rgba(72, 54, 39, .4); text-underline-offset: 4px; }
+.footer-credit { display: flex; align-items: center; gap: 4px; margin: 0; color: #80634d; font-size: 12px; }
+.footer-credit a { display: inline-flex; align-items: baseline; gap: 3px; color: var(--espresso); font-size: 14px; font-style: italic; text-decoration-color: rgba(72, 54, 39, .4); text-underline-offset: 4px; }
 .footer-credit a:hover, .footer-credit a:focus-visible { text-decoration-color: currentColor; }
 .footer-credit .link-arrow { width: 11px; height: 11px; }
+.footer-heart { width: 11px; height: 11px; flex: 0 0 auto; fill: #8b6347; }
 .back-top { color: #6d5b4a; font-size: 10px; letter-spacing: .06em; text-decoration: none; }
 
 @media (max-width: 1080px) {
