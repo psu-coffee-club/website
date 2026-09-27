@@ -82,6 +82,25 @@
   const sectionTracker = document.querySelector('.section-tracker');
   const sectionLinks = [...document.querySelectorAll('.section-tracker a')];
   const trackedSections = sectionLinks.map(link => document.querySelector(link.getAttribute('href')));
+  const trackerToggle = document.querySelector('.tracker-style-toggle');
+  const dropOffset = progress => 8 * Math.sin(progress * Math.PI * 3);
+  const setTrackerStyle = style => {
+    if (!sectionTracker) return;
+    sectionTracker.dataset.style = style;
+    const next = style === 'drop' ? 'line' : 'drop';
+    if (trackerToggle) {
+      trackerToggle.textContent = next === 'line' ? 'Line' : 'Drop';
+      trackerToggle.setAttribute('aria-label', `Switch to ${next === 'line' ? 'straight line' : 'coffee drop'} tracker`);
+      trackerToggle.title = trackerToggle.getAttribute('aria-label');
+    }
+  };
+  try { setTrackerStyle(localStorage.getItem('coffee-tracker-style') === 'line' ? 'line' : 'drop'); }
+  catch { setTrackerStyle('drop'); }
+  trackerToggle?.addEventListener('click', () => {
+    const style = sectionTracker.dataset.style === 'drop' ? 'line' : 'drop';
+    setTrackerStyle(style);
+    try { localStorage.setItem('coffee-tracker-style', style); } catch { /* Storage is optional. */ }
+  });
   const updateSectionTracker = () => {
     if (!sectionTracker || !sectionLinks.length) return;
     const scrollTop = window.scrollY;
@@ -92,8 +111,14 @@
     starts.forEach((start, index) => { if (scrollTop >= start) active = index; });
     const fraction = active < starts.length - 1
       ? clamp((scrollTop - starts[active]) / Math.max(1, starts[active + 1] - starts[active])) : 0;
-    sectionTracker.style.setProperty('--rail-progress', (active + fraction) / (starts.length - 1));
+    const progress = (active + fraction) / (starts.length - 1);
+    sectionTracker.style.setProperty('--rail-progress', progress);
+    const railHeight = Math.max(1, sectionTracker.clientHeight - 24);
+    const angle = -Math.atan(24 * Math.PI * Math.cos(progress * Math.PI * 3) / railHeight) * 180 / Math.PI;
+    sectionTracker.style.setProperty('--drop-x', `${reducedMotion.matches ? 0 : dropOffset(progress)}px`);
+    sectionTracker.style.setProperty('--drop-angle', `${reducedMotion.matches ? 0 : angle}deg`);
     sectionLinks.forEach((link, index) => {
+      link.style.setProperty('--stop-x', `${reducedMotion.matches ? 0 : dropOffset(index / (starts.length - 1))}px`);
       if (index === active) link.setAttribute('aria-current', 'location');
       else link.removeAttribute('aria-current');
     });
