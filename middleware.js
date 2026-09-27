@@ -110,8 +110,6 @@ export default async function middleware(request) {
 
   const url = new URL(request.url);
   if (url.pathname === '/__enter' && request.method === 'POST') {
-    const origin = request.headers.get('origin');
-    if (origin && origin !== url.origin) return privateResponse('Forbidden', 403);
     const destination = safeDestination(url.searchParams.get('next'));
     const body = await request.text();
     const candidate = body.length <= 1024 ? new URLSearchParams(body).get('password') : null;
