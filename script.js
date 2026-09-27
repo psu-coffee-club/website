@@ -83,21 +83,78 @@
   const sectionLinks = [...document.querySelectorAll('.section-tracker a')];
   const trackedSections = sectionLinks.map(link => document.querySelector(link.getAttribute('href')));
   const trackerToggle = document.querySelector('.tracker-style-toggle');
-  const dropOffset = progress => 8 * Math.sin(progress * Math.PI * 3);
+  const stainCanvas = document.querySelector('.tracker-stain');
+  const stainContext = stainCanvas?.getContext('2d');
+  let stainPixels, stainBase, stainArrival, lastStainProgress = -1;
+  if (stainContext) {
+    const width = stainCanvas.width, height = stainCanvas.height;
+    stainPixels = stainContext.createImageData(width, height);
+    stainBase = new Float32Array(width * height);
+    stainArrival = new Float32Array(width * height);
+    const hash = (x, y) => {
+      const n = Math.sin(x * 127.1 + y * 311.7 + 47.2) * 43758.5453;
+      return n - Math.floor(n);
+    };
+    const noise = (x, y) => {
+      const ix = Math.floor(x), iy = Math.floor(y);
+      let fx = x - ix, fy = y - iy;
+      fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+      const a = hash(ix, iy) * (1 - fx) + hash(ix + 1, iy) * fx;
+      const b = hash(ix, iy + 1) * (1 - fx) + hash(ix + 1, iy + 1) * fx;
+      return a * (1 - fy) + b * fy;
+    };
+    for (let y = 0; y < height; y++) {
+      const centre = 56 + 17 * (noise(2, y / 150) - .5) + 9 * (noise(8, y / 47) - .5);
+      // Local pooling and narrow channels, with no repeating wave or uniform width.
+      const pool = Math.pow(noise(16, y / 87), 2);
+      const radius = 4 + 22 * pool + 4 * noise(7, y / 23);
+      for (let x = 0; x < width; x++) {
+        const index = y * width + x;
+        const fibres = noise(x / 3.7, y / 5.2);
+        const edge = (noise(x / 10, y / 13) - .5) * 7 + (fibres - .5) * 3;
+        const distance = Math.abs(x - centre) - radius - edge;
+        const body = 1 / (1 + Math.exp(distance * .85));
+        const halo = Math.exp(-Math.max(0, distance) / 4.2) * .09;
+        const tide = Math.exp(-Math.pow((distance + 1.4) / 1.7, 2)) * .2;
+        const pigment = .13 + .19 * noise(x / 12, y / 34) + .1 * pool;
+        const fadeEnds = Math.min(1, y / 9, (height - 1 - y) / 12);
+        stainBase[index] = Math.min(.68, (body * pigment + tide + halo) * (.8 + fibres * .3)) * fadeEnds;
+        // The middle advances first; paper fibres wick sideways at different rates.
+        stainArrival[index] = y + Math.abs(x - centre) * 1.3 + (noise(x / 9, y / 19) - .5) * 25;
+        const i = index * 4;
+        stainPixels.data[i] = 108 + Math.round(fibres * 17);
+        stainPixels.data[i + 1] = 62 + Math.round(fibres * 16);
+        stainPixels.data[i + 2] = 29 + Math.round(fibres * 12);
+      }
+    }
+  }
+  const drawStain = progress => {
+    if (!stainContext || sectionTracker.dataset.style !== 'stain' || window.innerWidth <= 1000) return;
+    if (Math.abs(progress - lastStainProgress) < .0001) return;
+    lastStainProgress = progress;
+    const front = 10 + progress * (stainCanvas.height + 55);
+    for (let i = 0; i < stainBase.length; i++) {
+      const wet = clamp((front - stainArrival[i]) / 20);
+      stainPixels.data[i * 4 + 3] = Math.round(255 * stainBase[i] * wet * wet * (3 - 2 * wet));
+    }
+    stainContext.putImageData(stainPixels, 0, 0);
+  };
   const setTrackerStyle = style => {
     if (!sectionTracker) return;
     sectionTracker.dataset.style = style;
-    const next = style === 'drop' ? 'line' : 'drop';
+    lastStainProgress = -1;
+    requestAnimationFrame(() => updateSectionTracker());
+    const next = style === 'stain' ? 'line' : 'stain';
     if (trackerToggle) {
-      trackerToggle.textContent = next === 'line' ? 'Line' : 'Drop';
-      trackerToggle.setAttribute('aria-label', `Switch to ${next === 'line' ? 'straight line' : 'coffee drop'} tracker`);
+      trackerToggle.textContent = next === 'line' ? 'Line' : 'Stain';
+      trackerToggle.setAttribute('aria-label', `Switch to ${next === 'line' ? 'straight line' : 'coffee stain'} tracker`);
       trackerToggle.title = trackerToggle.getAttribute('aria-label');
     }
   };
-  try { setTrackerStyle(localStorage.getItem('coffee-tracker-style') === 'line' ? 'line' : 'drop'); }
-  catch { setTrackerStyle('drop'); }
+  try { setTrackerStyle(localStorage.getItem('coffee-tracker-style') === 'line' ? 'line' : 'stain'); }
+  catch { setTrackerStyle('stain'); }
   trackerToggle?.addEventListener('click', () => {
-    const style = sectionTracker.dataset.style === 'drop' ? 'line' : 'drop';
+    const style = sectionTracker.dataset.style === 'stain' ? 'line' : 'stain';
     setTrackerStyle(style);
     try { localStorage.setItem('coffee-tracker-style', style); } catch { /* Storage is optional. */ }
   });
@@ -113,12 +170,8 @@
       ? clamp((scrollTop - starts[active]) / Math.max(1, starts[active + 1] - starts[active])) : 0;
     const progress = (active + fraction) / (starts.length - 1);
     sectionTracker.style.setProperty('--rail-progress', progress);
-    const railHeight = Math.max(1, sectionTracker.clientHeight - 24);
-    const angle = -Math.atan(24 * Math.PI * Math.cos(progress * Math.PI * 3) / railHeight) * 180 / Math.PI;
-    sectionTracker.style.setProperty('--drop-x', `${reducedMotion.matches ? 0 : dropOffset(progress)}px`);
-    sectionTracker.style.setProperty('--drop-angle', `${reducedMotion.matches ? 0 : angle}deg`);
+    drawStain(progress);
     sectionLinks.forEach((link, index) => {
-      link.style.setProperty('--stop-x', `${reducedMotion.matches ? 0 : dropOffset(index / (starts.length - 1))}px`);
       if (index === active) link.setAttribute('aria-current', 'location');
       else link.removeAttribute('aria-current');
     });
