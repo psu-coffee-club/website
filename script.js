@@ -216,9 +216,24 @@
     requestStoryUpdate();
   }
 
-  const instagramEmbed = document.createElement("script");
-  instagramEmbed.async = true;
-  instagramEmbed.src = "https://www.instagram.com/embed.js";
-  instagramEmbed.onload = () => window.instgrm?.Embeds?.process();
-  document.body.append(instagramEmbed);
+  const instagramSection = document.querySelector('#instagram');
+  if (instagramSection) {
+    const loadInstagramEmbeds = () => {
+      const instagramEmbed = document.createElement('script');
+      instagramEmbed.async = true;
+      instagramEmbed.src = 'https://www.instagram.com/embed.js';
+      instagramEmbed.onload = () => window.instgrm?.Embeds?.process();
+      document.body.append(instagramEmbed);
+    };
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        loadInstagramEmbeds();
+      }, { rootMargin: '700px 0px' });
+      observer.observe(instagramSection);
+    } else {
+      loadInstagramEmbeds();
+    }
+  }
 })();
