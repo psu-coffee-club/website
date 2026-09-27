@@ -55,6 +55,23 @@ function entryPage(destination, incorrect = false) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f0e3">
+  <meta name="description" content="A student-run club at Penn State. Brew with us on Thursdays, discover local cafés, and meet people who care about coffee.">
+  <link rel="canonical" href="https://psu.coffee/">
+  <meta property="og:title" content="Penn State Coffee Club">
+  <meta property="og:description" content="A student-run club at Penn State. Brew with us on Thursdays, discover local cafés, and meet people who care about coffee.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://psu.coffee/">
+  <meta property="og:site_name" content="Penn State Coffee Club">
+  <meta property="og:image" content="https://psu.coffee/images/social/split-friends.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Two Penn State Coffee Club members making coffee together, beside the club name and logo.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Penn State Coffee Club">
+  <meta name="twitter:description" content="A student-run club at Penn State. Brew with us on Thursdays, discover local cafés, and meet people who care about coffee.">
+  <meta name="twitter:image" content="https://psu.coffee/images/social/split-friends.jpg">
+  <meta name="twitter:image:alt" content="Two Penn State Coffee Club members making coffee together, beside the club name and logo.">
   <title>Enter | Penn State Coffee Club</title>
   <style>
     * { box-sizing: border-box; }
@@ -109,6 +126,9 @@ export default async function middleware(request) {
   }
 
   const url = new URL(request.url);
+  if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/images/social/split-friends.jpg') {
+    return next();
+  }
   if (url.pathname === '/__enter' && request.method === 'POST') {
     const destination = safeDestination(url.searchParams.get('next'));
     const body = await request.text();
