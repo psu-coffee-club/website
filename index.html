@@ -13,13 +13,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260927-1" />
-    <script defer src="/script.js?v=20260927-1"></script>
+    <link rel="stylesheet" href="/styles.css?v=20260927-tracker" />
+    <script defer src="/script.js?v=20260927-tracker"></script>
     <script type="module" src="/bag3d.js?v=20260924-9"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="page-progress" aria-hidden="true"><span></span></div>
+    <nav class="section-tracker" aria-label="Page sections">
+      <div class="section-tracker-line" aria-hidden="true"><span></span></div>
+      <span class="section-tracker-marker" aria-hidden="true"></span>
+      <a href="#top" aria-label="Welcome"><span>Welcome</span></a>
+      <a href="#film" aria-label="The film"><span>The film</span></a>
+      <a href="#evening" aria-label="Thursday"><span>Thursday</span></a>
+      <a href="#rituals" aria-label="At the table"><span>At the table</span></a>
+      <a href="#crawl" aria-label="Coffee crawls"><span>Coffee crawls</span></a>
+      <a href="#moments" aria-label="On the road"><span>On the road</span></a>
+      <a href="#gallery" aria-label="Camera roll"><span>Camera roll</span></a>
+      <a href="#instagram" aria-label="Instagram"><span>Instagram</span></a>
+      <a href="#board" aria-label="Our people"><span>Our people</span></a>
+      <a href="#join" aria-label="Join us"><span>Join us</span></a>
+    </nav>
     <div class="site-shell">
       <header class="site-header">
         <a class="brand" href="#top" aria-label="Penn State Coffee Club home">
@@ -120,7 +134,7 @@
           </div>
         </section>
 
-        <section class="crawl-story section-pad" aria-labelledby="crawl-heading">
+        <section class="crawl-story section-pad" id="crawl" aria-labelledby="crawl-heading">
           <div class="crawl-visual" aria-hidden="true">
             <div class="crawl-paper"><span class="map-coordinate coord-one">40.79° N</span><span class="map-coordinate coord-two">77.86° W</span><span class="route-line route-main"></span><span class="route-dot dot-one"></span><span class="route-dot dot-two"></span><span class="route-dot dot-three"></span><span class="route-label label-one">SOWERS HARVEST</span><span class="route-label label-two">VIBE COFFEE</span><span class="route-label label-three">WEBSTER’S</span><span class="map-compass">N<br /><b>↑</b></span><div class="crawl-sticker"><span>PSU</span><b>COFFEE<br />CRAWL</b><small>HAPPY VALLEY, PA</small></div><span class="map-doodle">take<br />the scenic<br />route ↗</span></div>
           </div>
@@ -144,7 +158,7 @@
           </div>
         </section>
 
-        <section class="moments-section section-pad" aria-labelledby="moments-heading">
+        <section class="moments-section section-pad" id="gallery" aria-labelledby="moments-heading">
           <div class="section-heading moments-heading"><div><p class="eyebrow">From our camera roll</p><h2 id="moments-heading">Good cups.<br /><em>Good people.</em></h2></div></div>
           <div class="photo-journal" aria-label="Coffee Club photo journal">
             <figure class="journal-photo journal-photo-lead"><img src="/images/club/last-meeting.jpg" alt="A Coffee Club member holding up her drink at the semester's last meeting" loading="lazy" width="1080" height="1080" /><figcaption><b>01</b> One last cup before summer</figcaption></figure>
@@ -155,7 +169,7 @@
           </div>
         </section>
 
-        <section class="instagram-section section-pad" aria-labelledby="instagram-heading">
+        <section class="instagram-section section-pad" id="instagram" aria-labelledby="instagram-heading">
           <div class="section-heading moments-heading"><div><p class="eyebrow">From Instagram</p><h2 id="instagram-heading">The club,<br /><em>as it happens.</em></h2></div><a class="text-link" href="https://www.instagram.com/psucoffee/" target="_blank" rel="noreferrer">@psucoffee <span aria-hidden="true">↗</span></a></div>
           <div class="instagram-grid">
             <article class="ig-card ig-card-wide"><div class="ig-topline"><span class="ig-tag">01 · BREW TOGETHER</span><a href="https://www.instagram.com/p/DdFH8cFnH9g/" target="_blank" rel="noreferrer">OPEN POST ↗</a></div><div class="instagram-frame"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DdFH8cFnH9g/" data-instgrm-version="14"></blockquote></div><p class="ig-caption">Brewing methods, shared at the table.</p></article>

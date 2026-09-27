@@ -79,8 +79,31 @@
     });
   };
 
+  const sectionTracker = document.querySelector('.section-tracker');
+  const sectionLinks = [...document.querySelectorAll('.section-tracker a')];
+  const trackedSections = sectionLinks.map(link => document.querySelector(link.getAttribute('href')));
+  const updateSectionTracker = () => {
+    if (!sectionTracker || !sectionLinks.length) return;
+    const scrollTop = window.scrollY;
+    const pageEnd = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const starts = trackedSections.map(section => Math.max(0, Math.min(pageEnd,
+      section.getBoundingClientRect().top + scrollTop - window.innerHeight * 0.2)));
+    let active = 0;
+    starts.forEach((start, index) => { if (scrollTop >= start) active = index; });
+    const fraction = active < starts.length - 1
+      ? clamp((scrollTop - starts[active]) / Math.max(1, starts[active + 1] - starts[active])) : 0;
+    sectionTracker.style.setProperty('--rail-progress', (active + fraction) / (starts.length - 1));
+    sectionLinks.forEach((link, index) => {
+      if (index === active) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  };
+  // Images and embeds can change section offsets after initial load.
+  if (sectionTracker) new ResizeObserver(() => requestStoryUpdate()).observe(document.body);
+
   const renderStory = () => {
     framePending = false;
+    updateSectionTracker();
     const fullPageTravel = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
     const pageProgress = Math.min(1, Math.max(0, window.scrollY / fullPageTravel));
     if (pageProgressFill) pageProgressFill.style.transform = `scaleX(${pageProgress})`;
