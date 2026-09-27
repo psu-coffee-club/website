@@ -558,6 +558,10 @@ h1, h2, h3, p { font-family: var(--sans); }
 .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 18px; border-top: 1px solid rgba(72, 54, 39, .2); }
 .footer-mark { display: flex; align-items: center; gap: 9px; color: var(--espresso); font-size: 12px; font-weight: 600; text-decoration: none; }
 .footer-mark img { width: 35px; height: 35px; border-radius: 50%; }
+.footer-credit { display: flex; align-items: baseline; gap: 6px; margin: 0; color: #80634d; font-size: 14px; }
+.footer-credit a { display: inline-flex; align-items: baseline; gap: 3px; color: var(--espresso); font-size: 17px; font-style: italic; text-decoration-color: rgba(72, 54, 39, .4); text-underline-offset: 4px; }
+.footer-credit a:hover, .footer-credit a:focus-visible { text-decoration-color: currentColor; }
+.footer-credit .link-arrow { width: 11px; height: 11px; }
 .back-top { color: #6d5b4a; font-size: 10px; letter-spacing: .06em; text-decoration: none; }
 
 @media (max-width: 1080px) {
@@ -883,7 +887,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .board-grid { grid-template-columns: 1fr; }
   .board-card h3, .board-president h3, .board-vice-president h3 { font-size: clamp(29px, 8vw, 38px); }
   .board-socials a { font-size: 16px; }
-  .footer-bottom { flex-wrap: wrap; gap: 16px; }
+  .footer-bottom { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 16px; }
+  .footer-credit { grid-column: 1 / -1; grid-row: 2; }
   .back-top { display: inline-flex; gap: 6px; align-items: center; min-height: 44px; }
   .unseal-track { height: 280svh; }
   .unseal-pin { height: 100svh; min-height: 0; }
@@ -904,6 +909,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .journal-photo { grid-column: 1 / -1; }
   .hero-actions { align-items: stretch; flex-direction: column; }
   .hero-actions .text-link { align-self: flex-start; }
+  .footer-bottom { grid-template-columns: 1fr; }
+  .footer-credit { grid-column: 1; grid-row: 2; }
+  .back-top { grid-column: 1; grid-row: 3; justify-self: start; align-self: start; }
 }
 @media (max-height: 540px) and (max-width: 1024px) {
   .unseal-track { height: auto; }
