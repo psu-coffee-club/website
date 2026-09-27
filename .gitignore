@@ -1,3 +1,6 @@
 .vercel/
 .DS_Store
 instagram-archive-*/
+node_modules/
+.env
+.env.*

@@ -12,6 +12,15 @@ python3 -m http.server 4173
 
 Then open `http://localhost:4173`.
 
+The static server skips the temporary password page. To preview the actual entry flow locally, install dependencies and run Vercel's local server with a password of your choice:
+
+```sh
+npm install
+COFFEE_SITE_PASSWORD=your-local-preview-password vercel dev --listen 4174
+```
+
+Before deploying the password page, add `COFFEE_SITE_PASSWORD` as a Vercel environment variable for the environments you want to protect. The site returns a 503 page if the variable is missing or shorter than eight characters. Keep the password out of Git; `.env` files are ignored. Removing `middleware.js` and the environment variable removes this temporary gate.
+
 ## Site content
 
 - Weekly schedule: Thursdays at HUB-Robeson 102; Brew Team at 6:30 PM and general meeting at 7 PM.

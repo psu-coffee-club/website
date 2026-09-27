@@ -1,0 +1,8 @@
+{
+  "name": "penn-state-coffee-club",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vercel/functions": "^3.3.0"
+  }
+}
