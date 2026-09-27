@@ -13,8 +13,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260926-4" />
-    <script defer src="/script.js?v=20260926-2"></script>
+    <link rel="stylesheet" href="/styles.css?v=20260927-1" />
+    <script defer src="/script.js?v=20260927-1"></script>
     <script type="module" src="/bag3d.js?v=20260924-9"></script>
   </head>
   <body>
@@ -43,7 +43,7 @@
             <h1 id="hero-title">Good coffee.<br /><em>Better company.</em></h1>
             <p class="hero-lede">A student-run corner of Penn State for people who love coffee and the company it keeps.</p>
             <div class="hero-actions">
-              <a class="button button-dark" href="#evening">Unseal the evening <span aria-hidden="true">↓</span></a>
+              <a class="button button-dark" href="#film">Watch the film <span aria-hidden="true">↓</span></a>
               <a class="text-link" href="https://www.instagram.com/psucoffee/" target="_blank" rel="noreferrer">Find us on Instagram <span aria-hidden="true">↗</span></a>
             </div>
           </div>
@@ -52,6 +52,16 @@
             <div class="bag-3d-shell hero-bag" data-bag-scene="hero"></div>
           </div>
           <div class="hero-bottom-note"><span>SCROLL ON</span><span class="scroll-rule"></span></div>
+        </section>
+
+        <section class="film-section section-pad" id="film" aria-label="Penn State Coffee Club film">
+          <figure class="club-film">
+            <video controls playsinline preload="none" poster="/images/club-film-poster.jpg" width="1920" height="1080" aria-label="Penn State Coffee Club film" aria-describedby="club-film-caption">
+              <source src="/videos/coffee-club-film.mp4" type="video/mp4" />
+              <a href="/videos/coffee-club-film.mp4">Watch the Coffee Club film</a>.
+            </video>
+            <figcaption id="club-film-caption"><span>Penn State Coffee Club, on film.</span><span>0:37</span></figcaption>
+          </figure>
         </section>
 
         <section class="unseal-track" id="evening" aria-labelledby="evening-heading">
@@ -119,37 +129,39 @@
         </section>
 
         <figure class="crawl-photo-feature">
-          <a href="https://www.instagram.com/p/DXFmPcxERak/" target="_blank" rel="noreferrer" aria-label="See the Coffee Club's 2026 coffee crawl post on Instagram">
+          <div class="crawl-photo-image">
             <img src="/images/club/coffee-crawl-crew.jpg" alt="Coffee Club members gathered together on the 2026 coffee crawl" loading="lazy" width="1080" height="720" />
-          </a>
-          <figcaption><span>Out together · Coffee Crawl 2026</span><a href="https://www.instagram.com/p/DXFmPcxERak/" target="_blank" rel="noreferrer">See the day ↗</a></figcaption>
+          </div>
+          <figcaption>Out together · Coffee Crawl 2026</figcaption>
         </figure>
 
         <section class="trip-section section-pad" id="moments" aria-labelledby="trip-heading">
-          <div class="trip-copy"><p class="eyebrow">Coffee Club on the road</p><h2 id="trip-heading">Same love.<br /><em>New city.</em></h2><p>In spring 2025, the club took a three-day coffee trip to Pittsburgh, visiting cafés including De Fer, Novaria, Hilltop, Commonplace, and La Prima.</p><a class="text-link" href="https://www.instagram.com/psucoffee/p/DH9upbUMZwv/" target="_blank" rel="noreferrer">See the Pittsburgh trip <span aria-hidden="true">↗</span></a></div>
+          <div class="trip-copy"><p class="eyebrow">Coffee Club on the road</p><h2 id="trip-heading">Same love.<br /><em>New city.</em></h2><p>In spring 2025, the club took a three-day coffee trip to Pittsburgh, visiting cafés including De Fer, Novaria, Hilltop, Commonplace, and La Prima.</p></div>
           <div class="trip-art trip-photo-story" aria-label="Photos from the 2025 Pittsburgh coffee trip">
-            <a class="trip-photo trip-photo-friends" href="https://www.instagram.com/psucoffee/p/DH9upbUMZwv/" target="_blank" rel="noreferrer"><img src="/images/club/pittsburgh-friends.jpg" alt="Two Coffee Club friends smiling outside a Pittsburgh café" loading="lazy" width="1080" height="1161" /></a>
-            <a class="trip-photo trip-photo-crew" href="https://www.instagram.com/psucoffee/p/DH9upbUMZwv/" target="_blank" rel="noreferrer"><img src="/images/club/pittsburgh-cafe-crew.jpg" alt="Coffee Club members gathered inside a Pittsburgh café" loading="lazy" width="1080" height="1161" /></a>
-            <a class="trip-photo trip-photo-cup" href="https://www.instagram.com/psucoffee/p/DH9upbUMZwv/" target="_blank" rel="noreferrer"><img src="/images/club/pittsburgh-latte.jpg" alt="Latte from a stop on the Pittsburgh coffee crawl" loading="lazy" width="1080" height="1161" /></a>
+            <div class="trip-photo trip-photo-friends"><img src="/images/club/pittsburgh-friends.jpg" alt="Two Coffee Club friends smiling outside a Pittsburgh café" loading="lazy" width="1080" height="1161" /></div>
+            <div class="trip-photo trip-photo-crew"><img src="/images/club/pittsburgh-cafe-crew.jpg" alt="Coffee Club members gathered inside a Pittsburgh café" loading="lazy" width="1080" height="1161" /></div>
+            <div class="trip-photo trip-photo-cup"><img src="/images/club/pittsburgh-latte.jpg" alt="Latte from a stop on the Pittsburgh coffee crawl" loading="lazy" width="1080" height="1161" /></div>
             <span class="trip-photo-date">Pittsburgh · Three days · Spring 2025</span>
           </div>
         </section>
 
         <section class="moments-section section-pad" aria-labelledby="moments-heading">
-          <div class="section-heading moments-heading"><div><p class="eyebrow">From our camera roll</p><h2 id="moments-heading">Good cups.<br /><em>Good people.</em></h2></div><a class="text-link" href="https://www.instagram.com/psucoffee/" target="_blank" rel="noreferrer">More on Instagram <span aria-hidden="true">↗</span></a></div>
-          <figure class="club-film" id="club-film">
-            <video controls playsinline preload="none" poster="/images/club-film-poster.jpg" width="1920" height="1080" aria-label="Penn State Coffee Club film" aria-describedby="club-film-caption">
-              <source src="/videos/coffee-club-film.mp4" type="video/mp4" />
-              <a href="/videos/coffee-club-film.mp4">Watch the Coffee Club film</a>.
-            </video>
-            <figcaption id="club-film-caption"><span>Penn State Coffee Club, on film.</span><span>0:37</span></figcaption>
-          </figure>
+          <div class="section-heading moments-heading"><div><p class="eyebrow">From our camera roll</p><h2 id="moments-heading">Good cups.<br /><em>Good people.</em></h2></div></div>
           <div class="photo-journal" aria-label="Coffee Club photo journal">
-            <a class="journal-photo journal-photo-lead" href="https://www.instagram.com/p/DYAmzR6kSX-/" target="_blank" rel="noreferrer"><img src="/images/club/last-meeting.jpg" alt="A Coffee Club member holding up her drink at the semester's last meeting" loading="lazy" width="1080" height="1080" /><span><b>01</b> One last cup before summer <i aria-hidden="true">↗</i></span></a>
-            <a class="journal-photo" href="https://www.instagram.com/p/DdFH8cFnH9g/" target="_blank" rel="noreferrer"><img src="/images/club/brewing-friends.jpg" alt="Two Coffee Club members smiling at a brewing meeting" loading="lazy" width="1080" height="1080" /><span><b>02</b> Brewing together <i aria-hidden="true">↗</i></span></a>
-            <a class="journal-photo" href="https://www.instagram.com/p/DdpOgqenJ2u/" target="_blank" rel="noreferrer"><img src="/images/club/espresso-meeting.jpg" alt="A student pouring coffee for another Coffee Club member" loading="lazy" width="1080" height="1080" /><span><b>03</b> Thursday's pour <i aria-hidden="true">↗</i></span></a>
-            <a class="journal-photo" href="https://www.instagram.com/p/DXFmPcxERak/" target="_blank" rel="noreferrer"><img src="/images/club/coffee-crawl-walk.jpg" alt="Coffee Club members walking through town during the coffee crawl" loading="lazy" width="1080" height="720" /><span><b>04</b> The long way to the next café <i aria-hidden="true">↗</i></span></a>
-            <a class="journal-photo" href="https://www.instagram.com/p/DdFH8cFnH9g/" target="_blank" rel="noreferrer"><img src="/images/club/brew-team.jpg" alt="Coffee Club members preparing coffee together" loading="lazy" width="1080" height="1080" /><span><b>05</b> At the brew table <i aria-hidden="true">↗</i></span></a>
+            <figure class="journal-photo journal-photo-lead"><img src="/images/club/last-meeting.jpg" alt="A Coffee Club member holding up her drink at the semester's last meeting" loading="lazy" width="1080" height="1080" /><figcaption><b>01</b> One last cup before summer</figcaption></figure>
+            <figure class="journal-photo"><img src="/images/club/brewing-friends.jpg" alt="Two Coffee Club members smiling at a brewing meeting" loading="lazy" width="1080" height="1080" /><figcaption><b>02</b> Brewing together</figcaption></figure>
+            <figure class="journal-photo"><img src="/images/club/espresso-meeting.jpg" alt="A student pouring coffee for another Coffee Club member" loading="lazy" width="1080" height="1080" /><figcaption><b>03</b> Thursday's pour</figcaption></figure>
+            <figure class="journal-photo"><img src="/images/club/coffee-crawl-walk.jpg" alt="Coffee Club members walking through town during the coffee crawl" loading="lazy" width="1080" height="720" /><figcaption><b>04</b> The long way to the next café</figcaption></figure>
+            <figure class="journal-photo"><img src="/images/club/brew-team.jpg" alt="Coffee Club members preparing coffee together" loading="lazy" width="1080" height="1080" /><figcaption><b>05</b> At the brew table</figcaption></figure>
+          </div>
+        </section>
+
+        <section class="instagram-section section-pad" aria-labelledby="instagram-heading">
+          <div class="section-heading moments-heading"><div><p class="eyebrow">From Instagram</p><h2 id="instagram-heading">The club,<br /><em>as it happens.</em></h2></div><a class="text-link" href="https://www.instagram.com/psucoffee/" target="_blank" rel="noreferrer">@psucoffee <span aria-hidden="true">↗</span></a></div>
+          <div class="instagram-grid">
+            <article class="ig-card ig-card-wide"><div class="ig-topline"><span class="ig-tag">01 · BREW TOGETHER</span><a href="https://www.instagram.com/p/DdFH8cFnH9g/" target="_blank" rel="noreferrer">OPEN POST ↗</a></div><div class="instagram-frame"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DdFH8cFnH9g/" data-instgrm-version="14"></blockquote></div><p class="ig-caption">Brewing methods, shared at the table.</p></article>
+            <article class="ig-card"><div class="ig-topline"><span class="ig-tag">02 · OUT IN THE COMMUNITY</span><a href="https://www.instagram.com/reel/DdWxcE7B4mN/" target="_blank" rel="noreferrer">OPEN POST ↗</a></div><div class="instagram-frame"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/DdWxcE7B4mN/" data-instgrm-version="14"></blockquote></div><p class="ig-caption">A carrot cake latte at Student Farm Harvest Fest.</p></article>
+            <article class="ig-card"><div class="ig-topline"><span class="ig-tag">03 · THE PEOPLE</span><a href="https://www.instagram.com/p/DcOyAh_Ee-y/" target="_blank" rel="noreferrer">OPEN POST ↗</a></div><div class="instagram-frame"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DcOyAh_Ee-y/" data-instgrm-version="14"></blockquote></div><p class="ig-caption">Meet the team behind the next pour.</p></article>
           </div>
         </section>
 

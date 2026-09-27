@@ -115,4 +115,9 @@
     requestStoryUpdate();
   }
 
+  const instagramEmbed = document.createElement("script");
+  instagramEmbed.async = true;
+  instagramEmbed.src = "https://www.instagram.com/embed.js";
+  instagramEmbed.onload = () => window.instgrm?.Embeds?.process();
+  document.body.append(instagramEmbed);
 })();
